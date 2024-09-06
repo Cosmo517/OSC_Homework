@@ -1,0 +1,45 @@
+Script started on Fri 06 Sep 2024 08:58:23 AM MDT
+osc@ubuntu:~/homework/project_one$ make clean
+rm *.o runme
+osc@ubuntu:~/homework/project_one$ make
+gcc -c LuckyNumber.c
+gcc main.c LuckyNumber.o -o runme
+osc@ubuntu:~/homework/project_one$ mak[K[K[Ksudo make install
+[sudo] password for osc: 
+sudo cp ./runme /bin/
+osc@ubuntu:~/homework/project_one$ runme
+Enter a guess between 1 and 5: 4
+You guessed below the number!
+
+Guessed above the lucky number:     0
+Guessed correctly:                  0
+Guessed below the lucky number:     1
+
+Do you want to play again? (Y/N): y
+Enter a guess between 1 and 5: 1
+You guessed correctly!
+
+Guessed above the lucky number:     0
+Guessed correctly:                  1
+Guessed below the lucky number:     1
+
+Do you want to play again? (Y/N): y
+Enter a guess between 1 and 5: 5
+You guessed above the number!
+
+Guessed above the lucky number:     1
+Guessed correctly:                  1
+Guessed below the lucky number:     1
+
+Do you want to play again? (Y/N): n
+
+
+Thank you for playing!
+osc@ubuntu:~/homework/project_one$ sudo make uninstall
+sudo rm /bin/runme
+osc@ubuntu:~/homework/project_one$ runme
+bash: /bin/runme: No such file or directory
+osc@ubuntu:~/homework/project_one$ exis[Kt
+exit
+
+Script done on Fri 06 Sep 2024 08:59:08 AM MDT
