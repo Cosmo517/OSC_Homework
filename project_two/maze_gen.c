@@ -12,11 +12,15 @@
 
 #define PROC_NAME "maze_gen"
 
+static char user_input[BUFFER_SIZE] = {0};
+
+ssize_t maze_gen_write(struct file *file, const char __user *usr_buf, size_t count, loff_t *pos);
 ssize_t start_maze_gen(struct file *file, char *buf, size_t count, loff_t *pos);
 
 static struct file_operations proc_ops = {
         .owner = THIS_MODULE,
         .read = start_maze_gen,
+        .write = maze_gen_write,
 };
 
 /*
@@ -45,22 +49,26 @@ void gen_cleanup(void)
     printk( KERN_INFO "/proc/%s removed\n", PROC_NAME);
 }
 
-/**
- * This function is called each time the /proc/hello is read.
- * 
- * This function is called repeatedly until it returns 0, so
- * there must be logic that ensures it ultimately returns 0
- * once it has collected the data that is to go into the 
- * corresponding /proc file.
+/*
  *
- * params:
  *
- * file:
- * buf: buffer in user space
- * count:
- * pos:
- *
- */
+*/
+ssize_t maze_gen_write(struct file *file, const char __user *usr_buf, size_t count, loff_t *pos)
+{
+    if (count > BUFFER_SIZE - 1)
+    {
+        count = BUFFER_SIZE - 1;
+    }
+
+    if (copy_from_user(user_input, usr_buf, count))
+    {
+        return -EFAULT;
+    }
+
+    user_input[count] = '\0';
+
+    return count;
+}
 
 /*
  * Name: Ethan Bielecki
@@ -70,7 +78,6 @@ void gen_cleanup(void)
 ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
 {
     int rv = 0;
-    char buffer[BUFFER_SIZE];
     static int completed = 0;
 
     if (completed) 
@@ -81,10 +88,10 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
 
     completed = 1;
 
-    rv = sprintf(buffer, "Hello World\n");
+    rv = strlen(user_input);
 
     // copies the contents of buffer to userspace usr_buf
-    copy_to_user(usr_buf, buffer, rv);
+    copy_to_user(usr_buf, user_input, rv);
 
     return rv;
 }
