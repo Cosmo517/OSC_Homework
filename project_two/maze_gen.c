@@ -13,6 +13,7 @@
 #define PROC_NAME "maze_gen"
 
 static char user_input[BUFFER_SIZE] = {0};
+int **maze;
 
 ssize_t maze_gen_write(struct file *file, const char __user *usr_buf, size_t count, loff_t *pos);
 ssize_t start_maze_gen(struct file *file, char *buf, size_t count, loff_t *pos);
@@ -50,8 +51,9 @@ void gen_cleanup(void)
 }
 
 /*
- *
- *
+ * Name: Ethan Bielecki
+ * Date: 9/16/2024
+ * Description: This function accepts user input
 */
 ssize_t maze_gen_write(struct file *file, const char __user *usr_buf, size_t count, loff_t *pos)
 {
@@ -72,18 +74,59 @@ ssize_t maze_gen_write(struct file *file, const char __user *usr_buf, size_t cou
 
 /*
  * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function allocates the memory for the maze
+ * as the size comes from user input
+*/ 
+void allocate_maze_space(int rows, int cols)
+{
+    int i;
+    // GFP_Kernel is a common flag to dynamically allocate memory
+    maze = kmalloc(rows * sizeof(int*), GFP_KERNEL);
+
+    for (i = 0; i < cols; i++)
+    {
+        maze[i] = kmalloc(cols * sizeof(int), GFP_KERNEL);
+    }
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function frees the memory from the maze
+ * when the program ends
+*/
+void free_maze_memory(int rows)
+{
+    int i;
+    for (i = 0; i < rows; i++)
+    {
+        kfree(maze[i]);
+    }
+
+    kfree(maze);
+}
+
+void generate_maze(int rows, int cols)
+{
+
+}
+
+/*
+ * Name: Ethan Bielecki
  * Date: 9/16/2024
  * Description: This function will generate a maze and return it
 */ 
 ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
 {
+    // rv holds the length of the string to be returned
     int rv = 0;
     static int completed = 0;
-    int width = 0;
-    int height = 0;
+    int maze_width = 0;
+    int maze_height = 0;
     char buffer[BUFFER_SIZE];
-    sscanf(user_input, "%d %d", &width, &height);
-    rv = sprintf(buffer, "Width: %d\nHeight: %d", width, height);
+    sscanf(user_input, "%d %d", &maze_width, &maze_height);
+    rv = sprintf(buffer, "Width: %d\nHeight: %d", maze_width, maze_height);
 
     if (completed) 
     {

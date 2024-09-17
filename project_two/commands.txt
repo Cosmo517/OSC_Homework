@@ -1,5 +1,4 @@
 lsmod | less           (to see the modules that are installed)
 sudo insmod hello.ko   (to insert a module named "hello"... must do the .ko extension)
 sudo rmmod hello       (removes the module named "hello")
-sudo apt-install hello (installs the "hello" module after it was inserted)
 
