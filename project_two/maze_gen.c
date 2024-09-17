@@ -79,6 +79,11 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
 {
     int rv = 0;
     static int completed = 0;
+    int width = 0;
+    int height = 0;
+    char buffer[BUFFER_SIZE];
+    sscanf(user_input, "%d %d", &width, &height);
+    rv = sprintf(buffer, "Width: %d\nHeight: %d", width, height);
 
     if (completed) 
     {
@@ -88,10 +93,11 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
 
     completed = 1;
 
-    rv = strlen(user_input);
+    //rv = strlen(user_input);
 
     // copies the contents of buffer to userspace usr_buf
-    copy_to_user(usr_buf, user_input, rv);
+    //copy_to_user(usr_buf, user_input, rv);
+    copy_to_user(usr_buf, buffer, rv);
 
     return rv;
 }

@@ -1,9 +1,14 @@
 proc_file_path = '/proc/maze_gen'
 
-user_input = input("What to say? ")
+width = str(raw_input("Maze width? "))
+height = str(raw_input("Maze Height? "))
+
+
+print('Width of maze is: ' + width)
+print("Height of maze is: " + height)
 
 with open(proc_file_path, 'w') as f:
-    f.write(user_input)
+    f.write(width + " " + height)
 
 with open(proc_file_path, 'r') as f:
     output = f.read()
