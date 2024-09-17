@@ -1,8 +1,7 @@
 proc_file_path = '/proc/maze_gen'
 
-width = str(raw_input("Maze width? "))
-height = str(raw_input("Maze Height? "))
-
+width = input("Maze width? ")
+height = input("Maze Height? ")
 
 print('Width of maze is: ' + width)
 print("Height of maze is: " + height)
