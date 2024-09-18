@@ -7,6 +7,7 @@
 #include <linux/kernel.h>
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
+#include <linux/random.h>
 #include <asm/uaccess.h>
 
 #define BUFFER_SIZE 128
@@ -111,17 +112,142 @@ void allocate_maze_space(void)
     }
 }
 
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function will generate a random number given an upper
+ * bound, and return the positive version, including an offset
+*/ 
+int random_number(int bound, int offset);
+{
+    int i;
+    int rand_num;
+
+    // Generate random number
+    get_random_bytes(&i, sizeof(i));
+    rand_num = i % bound;
+    
+    if (rand_num < 0)
+        rand_num = rand_num * -1 + offset;
+    else
+        rand_num += offset;
+
+    return rand_num;
+}
 
 /*
  * Name: Ethan Bielecki
  * Date: 9/17/2024
- * Description: This function will generate the maze
+ * Description: This function will check if the row & column is on the edge of the maze
+ * (the outside border). It will return true if it is, and false otherwise
+*/
+int is_edge_maze(int check_row, int check_col)
+{
+    if (check_row == 0 || check_row == rows - 1)
+        return 1;
+
+    if (check_col == 0 || check_col == cols - 1)
+        return 1;
+
+    return 0;
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function checks if the cell has an unvisisted neighbor in the
+ * 4 cardinal directions
+*/ 
+int has_unvisited_neighbor(int check_row, int check_col)
+{
+    if (!is_edge_maze(check_row - 1, check_col))
+        if (maze[check_row - 1][check_col] == '#')
+            return 1;
+    if (!is_edge_maze(check_row + 1, check_col))
+        if (maze[check_row + 1][check_col] == '#')
+            return 1;
+    if (!is_edge_maze(check_row, check_col - 1))
+        if (maze[check_row][check_col - 1] == '#')
+            return 1;
+    if (!is_edge_maze(check_row, check_col + 1))
+        if (maze[check_row][check_col + 1] == '#')
+            return 1;
+
+    return 0;
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function will return true if the cell has visited
+ * neighbors, and false otherwise.
+*/ 
+int has_visited_neighbors(int check_row, int check_col)
+{
+
+    if (!is_edge_maze(check_row - 1, check_col))
+        if (maze[check_row - 1][check_col] == ' ')
+            return 1;
+    if (!is_edge_maze(check_row + 1, check_col))
+        if (maze[check_row + 1][check_col] == ' ')
+            return 1;
+    if (!is_edge_maze(check_row, check_col - 1))
+        if (maze[check_row][check_col - 1] == ' ')
+            return 1;
+    if (!is_edge_maze(check_row, check_col + 1))
+        if (maze[check_row][check_col + 1] == ' ')
+            return 1;
+
+    return 0;
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function will perform the hunt mode of the hunt-and-kill algorithm
+ * it will modify the hunt_array, to identify if the maze is finished or not, and the
+ * next visited square
+*/ 
+void hunt_mode(int *hunt_array)
+{
+    int x;
+    int y;
+    // Scan the maze for an unvisited cell (excluding wall cells)
+    for (y = 0; y < rows; y++)
+    {
+        for (x = 0; x < cols; x++)
+        {
+            if (is_edge_maze(y, x))
+                continue;
+
+            if (maze[y][x] == '#' && has_visited_neighbors(y, x))
+            {
+                // Set to visited, and set as new starting location
+                maze[y][x] = ' ';
+                hunt_array[1] = y;
+                hunt_array[2] = x;
+            }
+        }
+    }
+    // If we get here, that means that the maze is finished
+    hunt_array[0] = 1;
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/17/2024
+ * Description: This function will generate the maze using a hunt and kill approach
 */
 void generate_maze(void)
 {
     // Fill the maze with walls
     int x;
     int y;
+
+    // Index 0 = maze finished or not
+    // Index 1/2 = row/col of the next cell to hunt 
+    int hunt_array[3] = {0};
+    
     for (y = 0; y < maze_height; y++)
     {
         for (x = 0; x < maze_width; x++)
@@ -131,7 +257,7 @@ void generate_maze(void)
     }
 
     // Start generating the maze:
-    //
+    
 }
 
 /*
@@ -148,7 +274,8 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
     // Maze functionality below:
     int x;
     int y;
-    char buffer[896];
+    char buffer[700];
+
     sscanf(user_input, "%d %d", &maze_width, &maze_height);
 
     if (completed) 
@@ -175,10 +302,6 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
 
     completed = 1;
 
-    //rv = strlen(user_input);
-
-    // copies the contents of buffer to userspace usr_buf
-    //copy_to_user(usr_buf, user_input, rv);
     copy_to_user(usr_buf, buffer, rv);
 
     return rv;
