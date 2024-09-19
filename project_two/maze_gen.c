@@ -38,6 +38,7 @@ int init_gen(void)
 {
     proc_create(PROC_NAME, 0, NULL, &proc_ops);
     printk(KERN_INFO "/proc/%s created\n", PROC_NAME);
+    printk(KERN_INFO "MAZE_GEN: STARTED PROGRAM");
 
 	return 0;
 }
@@ -106,7 +107,7 @@ void allocate_maze_space(void)
     // GFP_Kernel is a common flag to dynamically allocate memory
     maze = kmalloc(maze_height * sizeof(char*), GFP_KERNEL);
 
-    for (i = 0; i < maze_width; i++)
+    for (i = 0; i < maze_height; i++)
     {
         maze[i] = kmalloc(maze_width * sizeof(char), GFP_KERNEL);
     }
@@ -178,172 +179,24 @@ int has_unvisited_neighbor(int check_row, int check_col)
 
 /*
  * Name: Ethan Bielecki
- * Date: 9/17/2024
- * Description: This function will return true if the cell has visited
- * neighbors, and false otherwise.
-*/ 
-void has_visited_neighbors(int check_row, int check_col, int* neighbor_array)
-{
-    int i;
-    for (i = 0; i < 4; i++)
-        neighbor_array[i] = 0;
-
-    if (!is_edge_maze(check_row - 2, check_col))
-        if (maze[check_row - 2][check_col] == ' ')
-            neighbor_array[0] = 1;
-    if (!is_edge_maze(check_row + 2, check_col))
-        if (maze[check_row + 2][check_col] == ' ')
-            neighbor_array[1] = 1;
-    if (!is_edge_maze(check_row, check_col - 2))
-        if (maze[check_row][check_col - 2] == ' ')
-            neighbor_array[2] = 1;
-    if (!is_edge_maze(check_row, check_col + 2))
-        if (maze[check_row][check_col + 2] == ' ')
-            neighbor_array[3] = 1;
-}
-
-int choose_rand_direction(int* neighbors)
-{
-    int i;
-    int num_neighbors = 0;
-    int rand_index = -1;
-    
-    // Check valid neighbors
-    for (i = 0; i < 4; i++)
-    {
-        if (neighbors[i])
-            num_neighbors++;
-    }
-    
-    // If no valid neighbors
-    if (num_neighbors == 0)
-    {
-        return -1;
-    }
-
-    do 
-    {
-        rand_index = random_number(4, 0);
-    } while (neighbors[rand_index] != 1);
-
-    return rand_index;
-}
-
-
-void get_dx_dy(int direction, int* dxdy)
-{
-    dxdy[0] = 0;
-    dxdy[1] = 0;
-   
-    // Based on the direction, choose the correct
-    // dxdy value
-    switch (direction) {
-        case 0:
-            dxdy[0] = -1;
-            break;
-        case 1:
-            dxdy[0] = 1;
-            break;
-        case 2:
-            dxdy[1] = -1;
-            break;
-        case 3:
-            dxdy[1] = 1;
-            break;
-        default:
-            break;
-    }
-}
-
-/*
- * Name: Ethan Bielecki
- * Date: 9/17/2024
+ * Date: 9/18/2024
  * Description: This function will perform the hunt mode of the hunt-and-kill algorithm
  * it will modify the hunt_array, to identify if the maze is finished or not, and the
  * next visited square
 */ 
-void hunt_mode(int *hunt_array)
+void hunt_mode(void)
 {
-    int x;
-    int y;
-    int vis_neighbor[3] = {0};
-    int dxdy[2] = {0}; // Index 0 is y, index 1 is x
-    int direction;
-    // Scan the maze for an unvisited cell (excluding wall cells)
-    for (y = 0; y < maze_height; y++)
-    {
-        for (x = 0; x < maze_width; x++)
-        {
-            // Skip cell if on the edge
-            if (is_edge_maze(y, x))
-                continue;
-            // Skip cell if its already visited
-            if (maze[y][x] == ' ')
-                continue;
 
-            // Check for visited neighbors
-            has_visited_neighbors(y, x, vis_neighbor);
-            
-            // Check to see if we have visited neighbors. Returns -1 if we dont
-            // else, it will return the direction to go
-            direction = choose_rand_direction(vis_neighbor);
-
-            // If there are no visited neighbors, skip this cell
-            if (direction == -1)
-                continue;
-
-            // There are visited neighbors, and we have a direction to
-            // a random one
-            get_dx_dy(direction, dxdy);
-
-            // There is a visited neighbor so we want to 
-            // carve a passage between visited neighbor & currently
-            // unvisited cell
-            if (maze[y + dxdy[0]][x + dxdy[1]] == '#')
-            {
-                // Set to visited, and set as new starting location
-                maze[y + dxdy[0] * 2][x + dxdy[1] * 2] = ' ';
-                maze[y + dxdy[0]][x + dxdy[1]] = ' ';
-                hunt_array[1] = y + dxdy[0] * 2;
-                hunt_array[2] = x + dxdy[1] * 2;
-            }
-        }
-    }
-    // If we get here, that means that the maze is finished
-    hunt_array[0] = 1;
 }
 
-
-void random_walk(int start_y, int start_x)
+/*
+ * Name: Ethan Bielecki
+ * Date: 9/18/2024
+ * Description: This function will perform the walk state of the hunt and kill algorithm.
+*/ 
+void random_walk(void)
 {
-    int walk_x = start_x;
-    int walk_y = start_y;
-    int new_x;
-    int new_y;
-    int rand_direction;
-    int dxdy[2] = {0};
-    while (has_unvisited_neighbor(walk_y, walk_x))
-    {
-        // Choose a random direction
-        rand_direction = random_number(4, 0);
-        // Get the direction values
-        get_dx_dy(rand_direction, dxdy);
-        
-        // Make sure that its not out of bounds or the edge of the maze
-        new_y = walk_y + dxdy[0] * 2;
-        new_x = walk_x + dxdy[1] * 2;
-        if (is_edge_maze(new_y, new_x))
-            continue;
 
-        // Check to make sure its a wall and the connection is a wall
-        if (maze[new_y][new_x] == '#' && maze[new_y - dxdy[0]][new_x - dxdy[1]]) 
-        {
-            maze[new_y][new_x] = ' ';
-            maze[new_y - dxdy[0]][new_x - dxdy[1]] = ' ';
-            walk_y = new_y;
-            walk_x = new_x;
-        }
-    } 
 }
 
 
@@ -358,10 +211,6 @@ void generate_maze(void)
     int y;
     int rand_row = 0;
     int rand_col = 0;
-
-    // Index 0 = maze finished or not
-    // Index 1/2 = row/col of the next cell to hunt 
-    int hunt_array[3] = {0};
  
     // Fill the maze with walls   
     for (y = 0; y < maze_height; y++)
@@ -378,7 +227,7 @@ void generate_maze(void)
     do {
         rand_row = random_number(maze_height, 0);
         rand_col = random_number(maze_width, 0);
-    } while (!is_edge_maze(rand_row, rand_col));
+    } while (is_edge_maze(rand_row, rand_col));
 
     maze[rand_row][rand_col] = ' ';
 
@@ -406,7 +255,7 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
     char buffer[512];
 
     sscanf(user_input, "%d %d", &maze_width, &maze_height);
-
+    printk(KERN_INFO "MAZE_GEN: LOADED USER INPUT\n");
     if (completed) 
     {
         completed = 0;
@@ -415,6 +264,8 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
 
     // Allocate space for the maze:
     allocate_maze_space();
+
+    printk(KERN_INFO "MAZE_GEN: ALLOCATED MAZE SPACE\n");
 
     // Generate the maze
     generate_maze();
