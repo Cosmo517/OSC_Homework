@@ -179,10 +179,10 @@ int has_unvisited_neighbor(int check_row, int check_col)
 
 /*
  * Name: Ethan Bielecki
- * Date: 9/18/2024
+ * Date: 9/19/2024
  * Description: This function will perform the hunt mode of the hunt-and-kill algorithm
- * it will modify the hunt_array, to identify if the maze is finished or not, and the
- * next visited square
+ * It will return a value of 1 if the maze is unfinished (i.e. found an unvisited cell
+ * with a visited neighbor). Otherwise, if the maze is complete, it will return 0.
 */ 
 int hunt_mode(int* walk_y, int* walk_x, int directions[4][2])
 {
@@ -191,23 +191,28 @@ int hunt_mode(int* walk_y, int* walk_x, int directions[4][2])
     int k;
     int dx;
     int dy;
-    // We need to search for an unvisited cell that has a neighbor that has been visited
-    for (i = 0; i < maze_height; i++)
+    // We need to search for an unvisited cell that has a neighbor that has been visitedi
+    // It's best to iterate through odd numbers so the maze maintains a clean look
+    for (i = 1; i < maze_height - 1; i+= 2)
     {
-        for (j = 0; j < maze_width; j++)
+        for (j = 1; j < maze_width - 1; j+= 2)
         {
-            // The cell is not on the edge, and its unvisited
+            // Although we are excluding edge cells, we will still double check
+            // to make sure its not out of bounds or on the edge.
+            // If the cell is unvisited, we need to check its neighbors
             if (!is_edge_maze(i, j) && maze[i][j] == '#')
             {
                 for (k = 0; k < 4; k++)
                 {
                     dy = i + directions[k][1];
                     dx = j + directions[k][0];
-                    // The cell is not on the edge, and it is visited
+                    // Again, we will do bounds checking, and see if the cell is visited
+                    // If it has been visited, mark that cell as visited, and make it our new
+                    // starting point.
                     if (!is_edge_maze(dy, dx) && maze[dy][dx] == ' ')
                     {
                         maze[i][j] = ' ';
-                        maze[i + directions[k][1] / 2][i + directions[k][0] / 2] = ' ';
+                        maze[i + directions[k][1] / 2][j + directions[k][0] / 2] = ' ';
                         *walk_y = i;
                         *walk_x = j;
                         return 1;
@@ -217,7 +222,7 @@ int hunt_mode(int* walk_y, int* walk_x, int directions[4][2])
         }
     }
 
-    // If we make it here, there are no more available cells
+    // If we make it here, then the maze has been completed
     return 0;
 }
 
@@ -238,7 +243,8 @@ void random_walk(int* walk_y, int* walk_x, int directions[4][2])
         int dy;
 
         // For our current position, calculate all possible directions in which
-        // we can move
+        // we can move. A move is viable if its not an edge cell, and that cell
+        // hasn't been visited yet
         for (i = 0; i < 4; i++)
         {
             // Calculate the change in direction
@@ -276,7 +282,7 @@ void random_walk(int* walk_y, int* walk_x, int directions[4][2])
 
 /*
  * Name: Ethan Bielecki
- * Date: 9/17/2024
+ * Date: 9/19/2024
  * Description: This function will generate the maze using a hunt and kill approach
 */
 void generate_maze(void)
@@ -286,7 +292,7 @@ void generate_maze(void)
     int walk_x;
     int walk_y;
     int directions[4][2] = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}};
-    int maze_finished;
+    int maze_unfinished;
 
 
     // Fill the maze with walls   
@@ -300,10 +306,10 @@ void generate_maze(void)
 
     // Start generating the maze:
 
-    // Choose a random location to start
+    // Choose a random location to start, make sure its an odd number
     do {
-        walk_y = random_number(maze_height, 0);
-        walk_x = random_number(maze_width, 0);
+        walk_y = random_number(maze_height / 2, 0) * 2 + 1;
+        walk_x = random_number(maze_width / 2, 0) * 2 + 1;
     } while (is_edge_maze(walk_y, walk_x));
 
     maze[walk_y][walk_x] = ' ';
@@ -311,8 +317,8 @@ void generate_maze(void)
     // Perform the generation loop
     do {
         random_walk(&walk_y, &walk_x, directions);
-        maze_finished = hunt_mode(&walk_y, &walk_x, directions);
-    } while (!maze_finished);
+        maze_unfinished = hunt_mode(&walk_y, &walk_x, directions);
+    } while (maze_unfinished);
 }
 
 /*
@@ -329,7 +335,7 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
     // Maze functionality below:
     int x;
     int y;
-    char buffer[512];
+    char buffer[896];
 
     sscanf(user_input, "%d %d", &maze_width, &maze_height);
     printk(KERN_INFO "MAZE_GEN: LOADED USER INPUT\n");
