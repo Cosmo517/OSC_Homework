@@ -184,9 +184,41 @@ int has_unvisited_neighbor(int check_row, int check_col)
  * it will modify the hunt_array, to identify if the maze is finished or not, and the
  * next visited square
 */ 
-void hunt_mode(void)
+int hunt_mode(int* walk_y, int* walk_x, int directions[4][2])
 {
+    int i;
+    int j;
+    int k;
+    int dx;
+    int dy;
+    // We need to search for an unvisited cell that has a neighbor that has been visited
+    for (i = 0; i < maze_height; i++)
+    {
+        for (j = 0; j < maze_width; j++)
+        {
+            // The cell is not on the edge, and its unvisited
+            if (!is_edge_maze(i, j) && maze[i][j] == '#')
+            {
+                for (k = 0; k < 4; k++)
+                {
+                    dy = i + directions[k][1];
+                    dx = j + directions[k][0];
+                    // The cell is not on the edge, and it is visited
+                    if (!is_edge_maze(dy, dx) && maze[dy][dx] == ' ')
+                    {
+                        maze[i][j] = ' ';
+                        maze[i + directions[k][1] / 2][i + directions[k][0] / 2] = ' ';
+                        *walk_y = i;
+                        *walk_x = j;
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
 
+    // If we make it here, there are no more available cells
+    return 0;
 }
 
 /*
@@ -194,9 +226,51 @@ void hunt_mode(void)
  * Date: 9/18/2024
  * Description: This function will perform the walk state of the hunt and kill algorithm.
 */ 
-void random_walk(void)
+void random_walk(int* walk_y, int* walk_x, int directions[4][2])
 {
+    // We want to walk until there are no more neighbors we can visit (dead end)
+    while (has_unvisited_neighbor(*walk_y, *walk_x))
+    {
+        int i;
+        int valid_directions[4][2];
+        int total_valid_directions = 0;
+        int dx;
+        int dy;
 
+        // For our current position, calculate all possible directions in which
+        // we can move
+        for (i = 0; i < 4; i++)
+        {
+            // Calculate the change in direction
+            dy = *walk_y + directions[i][1];
+            dx = *walk_x + directions[i][0];
+
+            // Check to make sure the cell is a valid cell to travel to
+            if (!is_edge_maze(dy, dx) && maze[dy][dx] == '#')
+            {
+                valid_directions[total_valid_directions][0] = directions[i][0];
+                valid_directions[total_valid_directions][1] = directions[i][1];
+                total_valid_directions++;
+            }
+        }
+
+        // If there are any valid directions to travel to, we should choose 
+        // a direction randomly, and travel that way
+        if (total_valid_directions > 0)
+        {
+            int random_index = random_number(total_valid_directions, 0);
+            int dy = valid_directions[random_index][1];
+            int dx = valid_directions[random_index][0]; 
+            int middle_cell_y = *walk_y + dy / 2;
+            int middle_cell_x = *walk_x + dx / 2;
+            
+            maze[middle_cell_y][middle_cell_x] = ' ';
+            maze[*walk_y + dy][*walk_x + dx] = ' ';
+
+            *walk_y += dy;
+            *walk_x += dx;
+        }
+    }
 }
 
 
@@ -209,9 +283,12 @@ void generate_maze(void)
 {
     int x;
     int y;
-    int rand_row = 0;
-    int rand_col = 0;
- 
+    int walk_x;
+    int walk_y;
+    int directions[4][2] = {{2, 0}, {-2, 0}, {0, 2}, {0, -2}};
+    int maze_finished;
+
+
     // Fill the maze with walls   
     for (y = 0; y < maze_height; y++)
     {
@@ -225,17 +302,17 @@ void generate_maze(void)
 
     // Choose a random location to start
     do {
-        rand_row = random_number(maze_height, 0);
-        rand_col = random_number(maze_width, 0);
-    } while (is_edge_maze(rand_row, rand_col));
+        walk_y = random_number(maze_height, 0);
+        walk_x = random_number(maze_width, 0);
+    } while (is_edge_maze(walk_y, walk_x));
 
-    maze[rand_row][rand_col] = ' ';
+    maze[walk_y][walk_x] = ' ';
 
     // Perform the generation loop
     do {
-        random_walk(hunt_array[1], hunt_array[2]);
-        hunt_mode(hunt_array);
-    } while (!hunt_array[0]);
+        random_walk(&walk_y, &walk_x, directions);
+        maze_finished = hunt_mode(&walk_y, &walk_x, directions);
+    } while (!maze_finished);
 }
 
 /*
