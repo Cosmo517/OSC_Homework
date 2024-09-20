@@ -1,0 +1,108 @@
+Script started on Fri 20 Sep 2024 01:43:52 PM MDT
+osc@ubuntu:~/homework/project_two$ sud[K[K[Kmake
+make -C /lib/modules/4.4.0-87-generic/build M=/home/osc/homework/project_two modules
+make[1]: Entering directory '/usr/src/linux-headers-4.4.0-87-generic'
+  CC [M]  /home/osc/homework/project_two/maze_gen.o
+  Building modules, stage 2.
+  MODPOST 1 modules
+  CC      /home/osc/homework/project_two/maze_gen.mod.o
+  LD [M]  /home/osc/homework/project_two/maze_gen.ko
+make[1]: Leaving directory '/usr/src/linux-headers-4.4.0-87-generic'
+osc@ubuntu:~/homework/project_two$ sudo insmod maze_gen.ko
+[sudo] password for osc: 
+osc@ubuntu:~/homework/project_two$ sudo r[Kpython3 run_maze_gen.py 
+Please enter odd numbers for the width and height
+Maze width? g
+The value entered was not a number
+Maze width? 4
+Please enter a width greater than 5
+Maze width? 6
+The value entered is not odd
+Maze width? 21
+Maze height? 21
+#####################
+#   #               #
+# ### ### ##### # # #
+#     #   #   # # # #
+####### # # ### # ###
+#   #   # #   # #   #
+# # # ### ### # ### #
+# # #   #   # # #   #
+# ##### ### # # #####
+#       #     #     #
+################### #
+#               #   #
+# ####### # ### ### #
+#     #   #   #   # #
+# ### # ##### ### # #
+#   # #     #   # # #
+##### # ####### ### #
+#     # #     # #   #
+# ##### ### # ### ###
+#     #     #       #
+#####################
+
+osc@ubuntu:~/homework/project_two$ sudo python3 run_maze_gen.py 
+Please enter odd numbers for the width and height
+Maze width? 29
+Maze height? 25
+#############################
+#   #               #       #
+# # # ####### ##### # ##### #
+# #   #   #   #     #     # #
+# ##### ### ### # ######### #
+#   #       #   # #   #     #
+### # ####### ### # # # # ###
+# # # #   #   #   # # # #   #
+# # # ### # ### # # # ### # #
+#   #     # #   #   #     # #
+# ######### ### ########### #
+# # #   #   #     # #   #   #
+# # # # ### # ### # # ### ###
+# #   # #   #   #   #   #   #
+# ##### # ##### ####### ### #
+#   #   # #     #       #   #
+### # ### ####### ####### ###
+#     #         #       #   #
+# ##### ### ##### ######### #
+# #   #   # #   #           #
+# # # ### # # # #############
+# # # # # # # #             #
+# ### # # # ##### ######### #
+#     #   #       #         #
+#############################
+
+osc@ubuntu:~/homework/project_two$ sudo python3 run_maze_gen.py 
+Please enter odd numbers for the width and height
+Maze width? 29
+Maze height? 25
+#############################
+# #   #         #           #
+# # # # # ### # # ### ##### #
+# # #   # #   #   #   #     #
+# ####### # ####### ### #####
+# #     # #     # # #       #
+# # # # # # ### # # ####### #
+# # # # # # #     # #     # #
+# # # # # # ####### # ### # #
+# # # #   # #       # #   # #
+# ### ##### # ####### # #####
+#         # # #       # #   #
+######### # # ### ##### ### #
+# #       # #   #     #   # #
+# # ####### ### # ### ### # #
+# #       #   # #   # # # # #
+# # # ### ### # ### # # # # #
+# # # # # #   # # # #   #   #
+# # # # # # ### # # #########
+#   # #   # #   # #         #
+##### ##### ### # # # ##### #
+# #     #     #   # #     # #
+# # ### # ### ##### ##### # #
+#   #   #   #       #     # #
+#############################
+
+osc@ubuntu:~/homework/project_two$ exit
+exit
+
+Script done on Fri 20 Sep 2024 01:44:38 PM MDT
