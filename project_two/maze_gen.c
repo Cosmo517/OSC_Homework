@@ -31,14 +31,13 @@ static struct file_operations proc_ops = {
 
 /*
  * Name: Ethan Bielecki
- * Date: 9/16/2024
+ * Date: 9/20/2024
  * Description: This function initializes the maze generation
 */ 
 int init_gen(void)
 {
     proc_create(PROC_NAME, 0, NULL, &proc_ops);
     printk(KERN_INFO "/proc/%s created\n", PROC_NAME);
-    printk(KERN_INFO "MAZE_GEN: STARTED PROGRAM");
 
 	return 0;
 }
@@ -191,7 +190,7 @@ int hunt_mode(int* walk_y, int* walk_x, int directions[4][2])
     int k;
     int dx;
     int dy;
-    // We need to search for an unvisited cell that has a neighbor that has been visitedi
+    // We need to search for an unvisited cell that has a neighbor that has been visited
     // It's best to iterate through odd numbers so the maze maintains a clean look
     for (i = 1; i < maze_height - 1; i+= 2)
     {
@@ -207,8 +206,8 @@ int hunt_mode(int* walk_y, int* walk_x, int directions[4][2])
                     dy = i + directions[k][1];
                     dx = j + directions[k][0];
                     // Again, we will do bounds checking, and see if the cell is visited
-                    // If it has been visited, mark that cell as visited, and make it our new
-                    // starting point.
+                    // If it has been visited, mark the previous unvisited cell as visited, 
+                    // and make it our new starting point
                     if (!is_edge_maze(dy, dx) && maze[dy][dx] == ' ')
                     {
                         maze[i][j] = ' ';
@@ -323,7 +322,7 @@ void generate_maze(void)
 
 /*
  * Name: Ethan Bielecki
- * Date: 9/16/2024
+ * Date: 9/20/2024
  * Description: This function will generate a maze and return it
 */ 
 ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
@@ -337,18 +336,21 @@ ssize_t start_maze_gen(struct file *file, char __user *usr_buf, size_t count, lo
     int y;
     char buffer[896];
 
-    sscanf(user_input, "%d %d", &maze_width, &maze_height);
-    printk(KERN_INFO "MAZE_GEN: LOADED USER INPUT\n");
+    // If the program has already been completed, then we can end
+
     if (completed) 
     {
         completed = 0;
         return 0;
     }
 
+    // Read user input to get the width and height of the maze
+
+    sscanf(user_input, "%d %d", &maze_width, &maze_height);
+    
+
     // Allocate space for the maze:
     allocate_maze_space();
-
-    printk(KERN_INFO "MAZE_GEN: ALLOCATED MAZE SPACE\n");
 
     // Generate the maze
     generate_maze();
@@ -376,6 +378,6 @@ module_init( init_gen );
 module_exit( gen_cleanup );
 
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("This module will generate a maze for the user");
+MODULE_DESCRIPTION("This module will generate a maze for the user given width/height");
 MODULE_AUTHOR("Ethan Bielecki");
 
