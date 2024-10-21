@@ -23,6 +23,8 @@ void motd()
         "Were it so easy."
     };
     
+    // Set a random seed to ensure the same prompt doesn't
+    // always get generated    
     srand(time(NULL));
         
     // Chose one at random
@@ -41,7 +43,7 @@ void motd()
 void change_directory(char* command)
 {
     // This gets the home path of the user. "HOME" is a
-    // UNIX environmental variable
+    // UNIX environment variable
     char* home_path = getenv("HOME");
 
     // Check if the user just typed cd
@@ -65,14 +67,14 @@ void change_directory(char* command)
 
 /*
  * Name: Ethan Bielecki
- * Date: 10/20/2024
+ * Date: 10/21/2024
  * Descrpition: This functions main purpose is to print the 
  * current working directory. This will allow the user to see what 
  * location of the OS they are in
 */ 
 void print_cwd()
 {
-    char cwd[1024];
+    char cwd[512];
     // Get the current working directory and store it in cwd
     getcwd(cwd, sizeof(cwd));
 
@@ -84,18 +86,16 @@ void print_cwd()
 
 /*
  * Name: Ethan Bielecki
- * Date: 10/20/2024
+ * Date: 10/21/2024
  * Description: This function will perform any other command
  * that the user types that isn't cd or exit 
 */
 void perform_user_command(char* command, int background)
 {
-    // This will store the command arguments
-    char* command_args[64];
     // These are for input redirections
     char* output_file = NULL;
     char* input_file = NULL;
-    int fd;
+    int file_to_open;
 
     // We need to check to see if the command the user entered
     // has an output redirection
@@ -150,10 +150,10 @@ void perform_user_command(char* command, int background)
         {
             // Try and open the output file as write only, and if it doesn't
             // exist, create it
-            fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            file_to_open = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
             
-            // If fd == -1 the file couldn't be opened
-            if (fd == -1)
+            // If file_to_open == -1 the file couldn't be opened
+            if (file_to_open == -1)
             {
                 printf("Failed to open the output file");
                 exit(EXIT_FAILURE);
@@ -161,20 +161,20 @@ void perform_user_command(char* command, int background)
             
             // dup2 allows us to copy the terminal output into
             // the file.
-            dup2(fd, STDOUT_FILENO);
+            dup2(file_to_open, STDOUT_FILENO);
             
             // Close the file
-            close(fd);
+            close(file_to_open);
         }
 
         // Check to see if the user used an input file redirection
         if (input_file != NULL)
         {
             // Try to open the input file as read only
-            fd = open(input_file, O_RDONLY);
+            file_to_open = open(input_file, O_RDONLY);
 
-            // If fd == -1 the file couldn't be opened
-            if (fd == -1)
+            // If file_to_open == -1 the file couldn't be opened
+            if (file_to_open == -1)
             {
                 printf("Failed to open the input file");
                 exit(EXIT_FAILURE);
@@ -182,10 +182,10 @@ void perform_user_command(char* command, int background)
 
             // dup2 here allows us to redirect reading from the keyboard
             // to reading from the file.
-            dup2(fd, STDIN_FILENO);
+            dup2(file_to_open, STDIN_FILENO);
 
             // Close the file
-            close(fd);
+            close(file_to_open);
         }
 
         // Perform the command the user requested
@@ -203,9 +203,9 @@ void perform_user_command(char* command, int background)
         if (!background)
         {
             // Background is 0, meaning we need to wait
-            printf("------------------------Starting Program---------------------\n");
+            printf("\x1B[36m------------------------Starting Program---------------------\x1B[0m\n");
             wait(NULL);
-            printf("------------------------Program Ended------------------------\n");
+            printf("\x1B[36m------------------------Program Ended------------------------\x1B[0m\n");
         }
     }
 }
@@ -213,7 +213,7 @@ void perform_user_command(char* command, int background)
 
 /*
  * Name: Ethan Bielecki
- * Date: 10/20/2024
+ * Date: 10/21/2024
  * Description: The main method to run the program and listen to user input
 */ 
 int main()
@@ -223,7 +223,7 @@ int main()
 
     // This is where we will store user input to later
     // parse out the command the user wants to perform
-    char user_input[1024];
+    char user_input[512];
 
     // We want to repeat until the user exits the program themselves
     while (1)
@@ -232,10 +232,10 @@ int main()
         print_cwd();
         
         // Now we need to get user input. fgets lets us grab a whole line
-        fgets(user_input, 1024, stdin);
+        fgets(user_input, 512, stdin);
         
         // Search for the new line character and remove it
-        for (int i = 0; i < 1024; i++)
+        for (int i = 0; i < 512; i++)
         {
             if (user_input[i] == '\n')
                 user_input[i] = '\0';
@@ -244,7 +244,7 @@ int main()
         // Now lets check for the commands the user types
         if (strcmp(user_input, "exit") == 0)
         {
-            printf("\x1B[31mExiting shell!\n");
+            printf("\x1B[31mExiting shell!\x1B[0m\n");
             break;
         }
         else if (strncmp(user_input, "cd", 2) == 0)  // Only check first 2 chars for cd
