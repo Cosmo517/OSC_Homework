@@ -1,0 +1,368 @@
+Script started on Tue 22 Oct 2024 01:39:59 PM MDT
+[H[JExploding Creepers!
+[1;32m/home/test4>[0mls
+[36m------------------------Starting Program---------------------[0m
+output.txt
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mls -al  Al
+[36m------------------------Starting Program---------------------[0m
+total 8
+-rw-r--r-- 1 test4 test4    0 Aug 31  2015 .bash_logout
+-rw-r--r-- 1 test4 test4    0 Aug 31  2015 .bashrc
+drwx------ 2 test4 test4 4096 Oct 22 13:37 .cache
+-rw-rw-r-- 1 test4 test4    0 Oct 22 13:39 output.txt
+-rw-r--r-- 1 test4 test4    0 May 16  2017 .profile
+-rw------- 1 test4 test4  668 Oct 22 13:39 .viminfo
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mcat /home/osc/homework/po rojectt ) _three/main.c
+[36m------------------------Starting Program---------------------[0m
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 10/20/2024
+ * Description: Clears the screen and prints the message of the day randomly from
+ * a list
+*/
+void motd()
+{
+    // Some fun game related messages
+    const char* messages[] = {
+        "Exploding Creepers!",
+        "The cake is a lie.",
+        "Companion Cube.",
+        "Were you blinded by its majesty?",
+        "Were it so easy."
+    };
+    
+    // Set a random seed to ensure the same prompt doesn't
+    // always get generated    
+    srand(time(NULL));
+        
+    // Chose one at random
+    int random_sentence = rand() % 5;
+
+    system("clear");
+    printf("%s\n", messages[random_sentence]);
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 10/20/2024
+ * Description: This function will change the users directory when they
+ * type the cd command
+*/ 
+void change_directory(char* command)
+{
+    // This gets the home path of the user. "HOME" is a
+    // UNIX environment variable
+    char* home_path = getenv("HOME");
+
+    // Check if the user just typed cd
+    if (strcmp(command, "cd") == 0)
+    {
+        // The user only typed "cd", so send them to home directory
+        chdir(home_path);
+        return;
+    }
+    
+    // Otherwise, we need to grab the path they are giving us
+    // This will skip the cd and the space to get a pointer
+    // to the start of the path
+    char* user_path = command + 3;
+    
+    if (chdir(user_path) != 0)
+    {
+        printf("\x1B[31mUnable to locate directory.\x1B[0m\n");
+    }
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 10/21/2024
+ * Descrpition: This functions main purpose is to print the 
+ * current working directory. This will allow the user to see what 
+ * location of the OS they are in
+*/ 
+void print_cwd()
+{
+    char cwd[512];
+    // Get the current working directory and store it in cwd
+    getcwd(cwd, sizeof(cwd));
+
+    // Print out the cwd with ANSI color codes to separate it from
+    // the users own input
+    printf("\033[1;32m%s>\033[0m", cwd);
+}
+
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 10/21/2024
+ * Description: This function will perform any other command
+ * that the user types that isn't cd or exit 
+*/
+void perform_user_command(char* command, int background)
+{
+    // These are for input redirections
+    char* output_file = NULL;
+    char* input_file = NULL;
+    int file_to_open;
+
+    // We need to check to see if the command the user entered
+    // has an output redirection
+    if (strstr(command, ">") != NULL)
+    {
+        // The first strtok will tokenize the command by >
+        // The second strtok will parse the original string by spaces
+        output_file = strtok(command, ">");
+        output_file = strtok(NULL, " ");
+
+        // If the redirecton was used correctly (given a file name)
+        if (output_file != NULL)
+        {
+            // Loop until we reach a character in the file name
+            // that doesn't start with a space. I.e. if the user
+            // put two spaces in front of the > like:
+            // ls >  test.txt
+            while (*output_file == ' ')
+            {
+                output_file++;
+            }
+        }
+    }
+
+    // We also need to check to see if the command the user
+    // entered has an input redirection
+    if (strstr(command, "<") != NULL)
+    {
+        // The code below works exactly like the output
+        // redirection above
+        input_file = strtok(command, "<");
+        input_file = strtok(NULL, " ");
+        if (input_file != NULL)
+        {
+            while (*input_file == ' ')
+            {
+                input_file++;
+            }
+        }
+    }
+
+
+    // Fork the process so we can run a user command
+    int pid = fork();
+
+    if (pid == 0)
+    {
+        // Child process will run the command the user specified
+
+        // Check to see if the user used an output redirection
+        if (output_file != NULL)
+        {
+            // Try and open the output file as write only, and if it doesn't
+            // exist, create it
+            file_to_open = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            
+            // If file_to_open == -1 the file couldn't be opened
+            if (file_to_open == -1)
+            {
+                printf("Failed to open the output file");
+                exit(EXIT_FAILURE);
+            }
+            
+            // dup2 allows us to copy the terminal output into
+            // the file.
+            dup2(file_to_open, STDOUT_FILENO);
+            
+            // Close the file
+            close(file_to_open);
+        }
+
+        // Check to see if the user used an input file redirection
+        if (input_file != NULL)
+        {
+            // Try to open the input file as read only
+            file_to_open = open(input_file, O_RDONLY);
+
+            // If file_to_open == -1 the file couldn't be opened
+            if (file_to_open == -1)
+            {
+                printf("Failed to open the input file");
+                exit(EXIT_FAILURE);
+            }
+
+            // dup2 here allows us to redirect reading from the keyboard
+            // to reading from the file.
+            dup2(file_to_open, STDIN_FILENO);
+
+            // Close the file
+            close(file_to_open);
+        }
+
+        // Perform the command the user requested
+        char* args[] = {"/bin/sh", "-c", command, NULL};
+        if (execvp(args[0], args) == -1)
+        {
+            printf("Failed to execute the command");
+        }
+        exit(EXIT_FAILURE);
+    }
+    else if (pid > 0)
+    {
+        // Parent process, it will either wait until the 
+        // child process is done, or continue if background == 1
+        if (!background)
+        {
+            // Background is 0, meaning we need to wait
+            printf("\x1B[36m------------------------Starting Program---------------------\x1B[0m\n");
+            wait(NULL);
+            printf("\x1B[36m------------------------Program Ended------------------------\x1B[0m\n");
+        }
+    }
+}
+
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 10/21/2024
+ * Description: The main method to run the program and listen to user input
+*/ 
+int main()
+{
+    // Call motd once upon startup
+    motd();
+
+    // This is where we will store user input to later
+    // parse out the command the user wants to perform
+    char user_input[512];
+
+    // We want to repeat until the user exits the program themselves
+    while (1)
+    {
+        // Always print the cwd before allowing user input
+        print_cwd();
+        
+        // Now we need to get user input. fgets lets us grab a whole line
+        fgets(user_input, 512, stdin);
+        
+        // Search for the new line character and remove it
+        for (int i = 0; i < 512; i++)
+        {
+            if (user_input[i] == '\n')
+                user_input[i] = '\0';
+        }
+
+        // Now lets check for the commands the user types
+        if (strcmp(user_input, "exit") == 0)
+        {
+            printf("\x1B[31mExiting shell!\x1B[0m\n");
+            break;
+        }
+        else if (strncmp(user_input, "cd", 2) == 0)  // Only check first 2 chars for cd
+        {
+            // We can simply pass the full command to user input and it
+            // will handle all the parsing
+            change_directory(user_input);
+        }
+        else
+        {
+            // Check if the user wants to run the command in the background
+            // If they do, set background to 1, and remove the & 
+            // from the command
+            int background = (user_input[strlen(user_input) - 1] == '&');
+            if (background)
+                user_input[strlen(user_input) - 1] = '\0';
+            perform_user_command(user_input, background);
+        }
+    }
+}
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0m; ls /bin
+[36m------------------------Starting Program---------------------[0m
+bash		    dumpkeys	mt-gnu		  sh.distrib
+btrfs		    echo	mv		  sleep
+btrfs-calc-size     ed		nano		  ss
+btrfsck		    egrep	nc		  static-sh
+btrfs-convert	    false	nc.openbsd	  stty
+btrfs-debug-tree    fgconsole	netcat		  su
+btrfs-find-root     fgrep	netstat		  sync
+btrfs-image	    findmnt	networkctl	  systemctl
+btrfs-map-logical   fsck.btrfs	nisdomainname	  systemd
+btrfs-select-super  fuser	ntfs-3g		  systemd-ask-password
+btrfs-show-super    fusermount	ntfs-3g.probe	  systemd-escape
+btrfstune	    getfacl	ntfs-3g.secaudit  systemd-hwdb
+btrfs-zero-log	    grep	ntfs-3g.usermap   systemd-inhibit
+bunzip2		    gunzip	ntfscat		  systemd-machine-id-setup
+busybox		    gzexe	ntfscluster	  systemd-notify
+bzcat		    gzip	ntfscmp		  systemd-tmpfiles
+bzcmp		    hostname	ntfsfallocate	  systemd-tty-ask-password-agent
+bzdiff		    ip		ntfsfix		  tailf
+bzegrep		    journalctl	ntfsinfo	  tar
+bzexe		    kbd_mode	ntfsls		  tempfile
+bzfgrep		    kill	ntfsmove	  touch
+bzgrep		    kmod	ntfstruncate	  true
+bzip2		    less	ntfswipe	  udevadm
+bzip2recover	    lessecho	open		  ulockmgr_server
+bzless		    lessfile	openvt		  umount
+bzmore		    lesskey	pidof		  uname
+cat		    lesspipe	ping		  uncompress
+chacl		    ln		ping6		  unicode_start
+chgrp		    loadkeys	plymouth	  vdir
+chmod		    login	ps		  wdctl
+chown		    loginctl	pwd		  which
+chvt		    lowntfs-3g	rbash		  whiptail
+cp		    ls		readlink	  ypdomainname
+cpio		    lsblk	red		  zcat
+custom_shell	    lsmod	rm		  zcmp
+dash		    mkdir	rmdir		  zdiff
+date		    mkfs.btrfs	rnano		  zegrep
+dd		    mknod	run-parts	  zfgrep
+df		    mktemp	sed		  zforce
+dir		    more	setfacl		  zgrep
+dmesg		    mount	setfont		  zless
+dnsdomainname	    mountpoint	setupcon	  zmore
+domainname	    mt		sh		  znew
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mmkdir temp
+[36m------------------------Starting Program---------------------[0m
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mcd temp
+[1;32m/home/test4/temp>[0mpwd
+[36m------------------------Starting Program---------------------[0m
+/home/test4/temp
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4/temp>[0mcd.  ..
+[1;32m/home/test4>[0mpwd
+[36m------------------------Starting Program---------------------[0m
+/home/test4
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0meh cho "Hello  , World!" > output      o output_redirection_Test    test.txt
+[36m------------------------Starting Program---------------------[0m
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mcat output	 _redirection_test.txt
+[36m------------------------Starting Program---------------------[0m
+cat: outpu_redirection_test.txt: No such file or directory
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mls
+[36m------------------------Starting Program---------------------[0m
+output_redirection_test.txt  output.txt  temp
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mcat output_redirection_test.txt
+[36m------------------------Starting Program---------------------[0m
+Hello, World!
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0mcat < output. _redirection_test.txt
+[36m------------------------Starting Program---------------------[0m
+Hello, World!
+[36m------------------------Program Ended------------------------[0m
+[1;32m/home/test4>[0me exit
+[31mExiting shell![0m
+
+Script done on Tue 22 Oct 2024 01:46:11 PM MDT
