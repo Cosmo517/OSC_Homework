@@ -1,22 +1,13 @@
-BINARY = custom_shell
+all: custom_shell
 
-CC = gcc
-CFLAGS = -Wall -g
+custom_shell: main.c
+	gcc -Wall -g -o custom_shell main.c
 
-SRC = main.c
-
-TARGET = $(BINARY)
-
-all: $(TARGET)
-
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
-
-install: $(TARGET)
-	sudo cp $(TARGET) /bin/
+install: custom_shell
+	sudo cp custom_shell /bin/
 
 uninstall:
-	sudo rm -f /bin/$(TARGET)
+	sudo rm -f /bin/custom_shell
 
 clean:
-	rm -f $(TARGET)
+	rm -f custom_shell
