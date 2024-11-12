@@ -37,12 +37,13 @@ void FIFO(int numProcesses, int nameLength, char processNames[numProcesses][name
         // Response time
         responseTime = waitTime - processArrival[i];
         totalResponseTime += responseTime;
-        printf("Response time: %d\n", responseTime);
+        printf("Response time: %d\n\n", responseTime);
+
+        cycles += processBurst[i];
 
         // Throughput check
-        if (cycles < 10 && (cycles + processBurst[i]) <= 10)
+        if (cycles <= 10)
         {
-            cycles += processBurst[i];
             processesCompleted++;
         }
     }
@@ -59,7 +60,7 @@ void FIFO(int numProcesses, int nameLength, char processNames[numProcesses][name
         for (int j = 0; j <= i; j++)
         {
             // Now loop through those processes burst times
-            for (int k = 0; k < processBurst[k]; k++)
+            for (int k = 0; k < processBurst[j]; k++)
             {
                 // if j and i are equal, that means the process is running
                 if (j == i)
@@ -172,12 +173,12 @@ int main()
 
     // Start the different scheduling methods
     printf("\nStarting Scheduler simulation...\n");
-    printf("FIFO variation:\n");
+    printf("FIFO variation:\n\n");
     FIFO(numProcesses, nameLength, processNames, processBurst, processArrival);
-    printf("\n\nSJF variation\n");
-    SJF(numProcesses, nameLength, processNames, processBurst, processArrival);
-    printf("\n\nRound Robin variation\n");
-    roundRobin(numProcesses, nameLength, processNames, processBurst, processArrival);
-    printf("\n\nSimulation ended!\n");
+    //printf("\n\nSJF variation\n");
+    //SJF(numProcesses, nameLength, processNames, processBurst, processArrival);
+    //printf("\n\nRound Robin variation\n");
+    //roundRobin(numProcesses, nameLength, processNames, processBurst, processArrival);
+    //printf("\n\nSimulation ended!\n");
     return 0;
 }
