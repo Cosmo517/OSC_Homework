@@ -13,6 +13,7 @@ typedef struct {
     int finishTime;
     int waitTime;
     int responseTime;
+    char outputString[512];
 } Process;
 
 
@@ -22,7 +23,7 @@ typedef struct {
  * Description: This function will perform first
  * in first out on the processes 
 */ 
-void FIFO(int numProcesses, Process processes[])
+void FIFO(int numProcesses, Process processes[], int cyclesThroughput)
 {
     int totalWaitTime = 0;
     int totalResponseTime = 0;
@@ -30,7 +31,6 @@ void FIFO(int numProcesses, Process processes[])
     float averageResponseTime = 0;
     int cycles = 0;
     int processesCompleted = 0;
-    float throughput = 0;
 
     for (int i = 0; i < numProcesses; i++)
     {
@@ -55,7 +55,7 @@ void FIFO(int numProcesses, Process processes[])
         cycles += processes[i].burstTime;
 
         // Throughput check
-        if (cycles <= 10)
+        if (cycles <= cyclesThroughput)
         {
             processesCompleted++;
         }
@@ -93,10 +93,9 @@ void FIFO(int numProcesses, Process processes[])
     // Average information
     averageWaitTime = totalWaitTime / numProcesses;
     averageResponseTime = totalResponseTime / numProcesses;
-    throughput = (float)processesCompleted / 10; // throughput over 10 cycles
     printf("Average waiting time: %f\n", averageWaitTime);
     printf("Average response time: %f\n", averageResponseTime);
-    printf("Throughput: %f\n", throughput);
+    printf("Throughput: %d / %d \n", processesCompleted, cyclesThroughput);
 }
 
 /*
@@ -105,16 +104,13 @@ void FIFO(int numProcesses, Process processes[])
  * Description: This function will perform
  * shortest job first on the processes
 */ 
-void SJF(int numProcesses, Process processes[])
+void SJF(int numProcesses, Process processes[], int cyclesThroughput)
 {
     // used to track if we have completed all processes
     int finished = 0;
     int currentCycle = 0;
     int processesCompletedThroughput = 0;
 
-    // The 2d array below will be used to store the output strings
-    // for each process for the chart creation.
-    char outputStrings[5][512] = {'\0'};
     while (finished != numProcesses)
     {
         // We need to find the shortest process that also arrived
@@ -144,16 +140,16 @@ void SJF(int numProcesses, Process processes[])
 
             // We need to insert a # for the process
             int k = 0;
-            while (outputStrings[shortestProcessIndex][k] != '\0')
+            while (shortestProcess->outputString[k] != '\0')
                 k++;
-            outputStrings[shortestProcessIndex][k] = '#';
+            shortestProcess->outputString[k] = '#';
             
             // If the process is done, increase our finished count
             if (shortestProcess->remainingTime == 0)
             {
                 finished++;
                 // Throughput
-                if (currentCycle <= 10)
+                if (currentCycle <= cyclesThroughput)
                     processesCompletedThroughput++;
             }
         }
@@ -165,16 +161,16 @@ void SJF(int numProcesses, Process processes[])
             if (shortestProcessIndex != i)
             {
                 int j = 0;
-                while (outputStrings[i][j] != '\0')
+                while (processes[i].outputString[j] != '\0')
                     j++;
 
                 if (processes[i].arrivalTime > currentCycle)
                 {
-                    outputStrings[i][j] = ' ';
+                    processes[i].outputString[j] = ' ';
                 }
                 else
                 {
-                    outputStrings[i][j] = '_';
+                    processes[i].outputString[j] = '_';
                     if (processes[i].remainingTime > 0)
                         processes[i].waitTime++;
                 }
@@ -190,7 +186,6 @@ void SJF(int numProcesses, Process processes[])
    float averageWaitTime = 0;
    int totalResponseTime = 0;
    float averageResponseTime = 0;
-   float throughput = 0;
 
    for (int i = 0; i < numProcesses; i++)
    {
@@ -207,16 +202,15 @@ void SJF(int numProcesses, Process processes[])
    // Now display the chart
    for (int i = 0; i < numProcesses; i++)
    {
-       printf("%-20s: %s\n", processes[i].name, outputStrings[i]); 
+       printf("%-20s: %s\n", processes[i].name, processes[i].outputString); 
    }
 
    // Now display average information
    averageWaitTime = totalWaitTime / numProcesses;
    averageResponseTime = totalResponseTime / numProcesses;
-   throughput = (float)processesCompletedThroughput / 10;
    printf("\nAverage waiting time: %f\n", averageWaitTime);
    printf("Average response time: %f\n", averageResponseTime);
-   printf("Throughput: %f\n", throughput);
+   printf("Throughput: %d / %d\n", processesCompletedThroughput, cyclesThroughput);
 }
 
 /*
@@ -225,15 +219,46 @@ void SJF(int numProcesses, Process processes[])
  * Description: This function will perform round
  * robin scheduling on the processes
 */ 
-void roundRobin(int numProcesses, Process processes[])
+void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
 {
     Process* readyQueue[5];
     int finished = 0;
+    int processesStarted = 0;
     int currentCycle = 0;
-
+    int queueIndex = 0; // marks where we will be pulling from
+    int queueEnd = 0; // marks where the end of the queue is
+    
     while (finished != 4)
     {
-        
+        // We first want to check if a process has arrived
+        // If it has, add it to the end of the queue
+        if (processesStarted != numProcesses)
+        {
+            for (int i = 0; i < numProcesses; i++)
+            {
+                // If the arrivalTime is <= currentCycle, that means
+                // we can add the process to the ready queue
+                if (processes[i].arrivalTime <= currentCycle)
+                {
+                    // Add the process to the end of the queue
+                    readyQueue[queueEnd] = &processes[i];
+                    queueEnd = (queueEnd + 1) % numProcesses;
+                }
+            }
+        }
+
+        // Now that we have the processes in the ready queue
+        // We need to take the first one out to begin processing
+        if (queueIndex != queueEnd) // queue has items in it
+        {dw
+            Process* popped = readyQueue[queueIndex];
+            if (popped->remainingTime == popped->burstTime)
+            {
+                popped->startTime = currentCycle;
+                popped->responseTime = currentCycle - popped->arrivalTime;
+            }
+        }
+
         currentCycle++;
     }
 }
@@ -268,6 +293,7 @@ int main()
         printf("Found: %s %d %d\n", processes[i].name, processes[i].burstTime, processes[i].arrivalTime);
         processes[i].remainingTime = processes[i].burstTime;
         processes[i].waitTime = 0;
+        memset(processes[i].outputString, '\0', sizeof(processes[i].outputString));
         i++;
     }
     
@@ -295,11 +321,11 @@ int main()
     // Start the different scheduling methods
     printf("\nStarting Scheduler simulation...\n");
     //printf("FIFO variation:\n\n");
-    //FIFO(numProcesses, processes);
-    printf("\n\nSJF variation\n\n");
-    SJF(numProcesses, processes);
-    //printf("\n\nRound Robin variation\n\n");
-    //roundRobin(numProcesses, processes);
+    //FIFO(numProcesses, processes, 10);
+    //printf("\n\nSJF variation\n\n");
+    //SJF(numProcesses, processes, 10);
+    printf("\n\nRound Robin variation\n\n");
+    roundRobin(numProcesses, processes, 10);
     printf("\n\nSimulation ended!\n");
     return 0;
 }
