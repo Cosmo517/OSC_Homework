@@ -1,45 +1,58 @@
 #include <stdio.h>
 #include <string.h>
 
+// The below struct will be used to keep track of
+// a processes information. More useful for 
+// SRTF and RR
+typedef struct {
+    char name[128];
+    int burstTime;
+    int arrivalTime;
+    int remainingTime;
+    int startTime;
+    int finishTime;
+    int waitTime;
+    int responseTime;
+} Process;
+
+
 /*
  * Name: Ethan Bielecki
  * Date: 11/11/2024
  * Description: This function will perform first
  * in first out on the processes 
 */ 
-void FIFO(int numProcesses, int nameLength, char processNames[numProcesses][nameLength], int processBurst[], int processArrival[])
+void FIFO(int numProcesses, Process processes[])
 {
     int totalWaitTime = 0;
     int totalResponseTime = 0;
-    int averageWaitTime = 0;
-    int averageResponseTime = 0;
+    float averageWaitTime = 0;
+    float averageResponseTime = 0;
     int cycles = 0;
     int processesCompleted = 0;
-    int throughput = 0;
+    float throughput = 0;
 
     for (int i = 0; i < numProcesses; i++)
     {
         // Standard variable initialization
-        int waitTime = 0;
-        int responseTime = 0;
 
-        printf("Process %s info:\n", processNames[i]);
+        printf("Process %s info:\n", processes[i].name);
         
         // Wait time
         for (int j = 0; j < i; j++)
         {
-            waitTime += processBurst[j];
+            processes[i].waitTime += processes[j].burstTime;
         }
         
-        totalWaitTime += waitTime;
-        printf("Wait time: %d\n", waitTime);
+        totalWaitTime += processes[i].waitTime;
+        printf("Wait time: %d\n", processes[i].waitTime);
         
         // Response time
-        responseTime = waitTime - processArrival[i];
-        totalResponseTime += responseTime;
-        printf("Response time: %d\n\n", responseTime);
+        processes[i].responseTime = processes[i].waitTime - processes[i].arrivalTime;
+        totalResponseTime += processes[i].responseTime;
+        printf("Response time: %d\n\n", processes[i].responseTime);
 
-        cycles += processBurst[i];
+        cycles += processes[i].burstTime;
 
         // Throughput check
         if (cycles <= 10)
@@ -49,24 +62,28 @@ void FIFO(int numProcesses, int nameLength, char processNames[numProcesses][name
     }
 
     printf("\n"); 
-    
+   
     // Chart creation
     // We loop over each process
     for (int i = 0; i < numProcesses; i++)
     {
-        printf("%-20s: ", processNames[i]);
+        int currentCycles = 0; // Used to track cycle count
+        printf("%-20s: ", processes[i].name);
         
         // We now loop over each process before the current one
         for (int j = 0; j <= i; j++)
         {
             // Now loop through those processes burst times
-            for (int k = 0; k < processBurst[j]; k++)
+            for (int k = 0; k < processes[j].burstTime; k++)
             {
                 // if j and i are equal, that means the process is running
                 if (j == i)
                     printf("#");
-                else
+                else if (currentCycles >= processes[i].arrivalTime) // Process is waiting
                     printf("_");
+                else
+                    printf(" "); // Process hasn't arrived yet
+                currentCycles++;
             }
         }
         printf("\n");
@@ -76,10 +93,10 @@ void FIFO(int numProcesses, int nameLength, char processNames[numProcesses][name
     // Average information
     averageWaitTime = totalWaitTime / numProcesses;
     averageResponseTime = totalResponseTime / numProcesses;
-    throughput = processesCompleted / 10; // throughput over 10 cycles
-    printf("Average waiting time: %d\n", averageWaitTime);
-    printf("Average response time: %d\n", averageResponseTime);
-    printf("Throughput: %d\n", throughput);
+    throughput = (float)processesCompleted / 10; // throughput over 10 cycles
+    printf("Average waiting time: %f\n", averageWaitTime);
+    printf("Average response time: %f\n", averageResponseTime);
+    printf("Throughput: %f\n", throughput);
 }
 
 /*
@@ -88,9 +105,118 @@ void FIFO(int numProcesses, int nameLength, char processNames[numProcesses][name
  * Description: This function will perform
  * shortest job first on the processes
 */ 
-void SJF(int numProcesses, int nameLength, char processNames[numProcesses][nameLength], int processBurst[], int processArrival[])
+void SJF(int numProcesses, Process processes[])
 {
-    printf("Not implemented yet!");
+    // used to track if we have completed all processes
+    int finished = 0;
+    int currentCycle = 0;
+    int processesCompletedThroughput = 0;
+
+    // The 2d array below will be used to store the output strings
+    // for each process for the chart creation.
+    char outputStrings[5][512] = {'\0'};
+    while (finished != numProcesses)
+    {
+        // We need to find the shortest process that also arrived
+        Process* shortestProcess = NULL;
+        int shortestProcessIndex = -1;
+        for (int i = 0; i < numProcesses; i++)
+        {
+            if (currentCycle >= processes[i].arrivalTime && processes[i].remainingTime > 0 && (!shortestProcess || processes[i].remainingTime < shortestProcess->remainingTime))
+            {
+                shortestProcess = &processes[i];
+                shortestProcessIndex = i;
+            }
+        }
+
+        // Make sure we do have a shortest process (its not null)
+        if (shortestProcess)
+        {
+            // Check if the process just started
+           if (shortestProcess->remainingTime == shortestProcess->burstTime)
+            {
+                shortestProcess->startTime = currentCycle;
+                shortestProcess->responseTime = currentCycle - shortestProcess->arrivalTime;
+            }
+
+            // Decrease the time on the process
+            shortestProcess->remainingTime--;
+
+            // We need to insert a # for the process
+            int k = 0;
+            while (outputStrings[shortestProcessIndex][k] != '\0')
+                k++;
+            outputStrings[shortestProcessIndex][k] = '#';
+            
+            // If the process is done, increase our finished count
+            if (shortestProcess->remainingTime == 0)
+            {
+                finished++;
+                // Throughput
+                if (currentCycle <= 10)
+                    processesCompletedThroughput++;
+            }
+        }
+        
+        // For any process that isnt the shortest process, we need
+        // to either add a space or _ depending on if it arrived or not
+        for (int i = 0; i < numProcesses; i++)
+        {
+            if (shortestProcessIndex != i)
+            {
+                int j = 0;
+                while (outputStrings[i][j] != '\0')
+                    j++;
+
+                if (processes[i].arrivalTime > currentCycle)
+                {
+                    outputStrings[i][j] = ' ';
+                }
+                else
+                {
+                    outputStrings[i][j] = '_';
+                    if (processes[i].remainingTime > 0)
+                        processes[i].waitTime++;
+                }
+            }
+        }
+
+        currentCycle++;
+    }
+
+   // Now we need to display all the information about the processes
+   // We can also do calculations for average times
+   int totalWaitTime = 0;
+   float averageWaitTime = 0;
+   int totalResponseTime = 0;
+   float averageResponseTime = 0;
+   float throughput = 0;
+
+   for (int i = 0; i < numProcesses; i++)
+   {
+       printf("Process %s info:\n", processes[i].name);
+       printf("Wait time: %d\n", processes[i].waitTime);
+       printf("Response time: %d\n", processes[i].responseTime);
+       printf("\n");
+
+       totalWaitTime += processes[i].waitTime;
+       totalResponseTime += processes[i].responseTime;
+   }
+   
+
+   // Now display the chart
+   for (int i = 0; i < numProcesses; i++)
+   {
+       printf("%-20s: %s\n", processes[i].name, outputStrings[i]); 
+   }
+
+   // Now display average information
+   averageWaitTime = totalWaitTime / numProcesses;
+   averageResponseTime = totalResponseTime / numProcesses;
+   throughput = (float)processesCompletedThroughput / 10;
+   printf("\nAverage waiting time: %f\n", averageWaitTime);
+   printf("Average response time: %f\n", averageResponseTime);
+   printf("Throughput: %f\n", throughput);
 }
 
 /*
@@ -99,9 +225,17 @@ void SJF(int numProcesses, int nameLength, char processNames[numProcesses][nameL
  * Description: This function will perform round
  * robin scheduling on the processes
 */ 
-void roundRobin(int numProcesses, int nameLength, char processNames[numProcesses][nameLength], int procesBurst[], int processArrival[])
+void roundRobin(int numProcesses, Process processes[])
 {
-    printf("Not implemented yet!");
+    Process* readyQueue[5];
+    int finished = 0;
+    int currentCycle = 0;
+
+    while (finished != 4)
+    {
+        
+        currentCycle++;
+    }
 }
 
 
@@ -114,13 +248,10 @@ int main()
 {
     // Basic process information
     int numProcesses = 5;
-    int nameLength = 128;
     
     // Max 5 processes, max 128 char names
-    char processNames[numProcesses][nameLength];
-    int processBurst[numProcesses];
-    int processArrival[numProcesses];
-    
+    Process processes[numProcesses];    
+
     // Input file with process info
     FILE* fileInput = fopen("input.txt", "r");
 
@@ -132,9 +263,11 @@ int main()
 
     // Loop through all the processes in the file
     int i = 0;
-    while (fscanf(fileInput, "%s %d %d", processNames[i], &processBurst[i], &processArrival[i]) == 3)
+    while (fscanf(fileInput, "%s %d %d", processes[i].name, &processes[i].burstTime, &processes[i].arrivalTime) == 3)
     {
-        printf("Found: %s %d %d\n", processNames[i], processBurst[i], processArrival[i]);
+        printf("Found: %s %d %d\n", processes[i].name, processes[i].burstTime, processes[i].arrivalTime);
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].waitTime = 0;
         i++;
     }
     
@@ -143,42 +276,30 @@ int main()
 
     fclose(fileInput);
 
-    char tempName[nameLength];
-    int tempBurst;
-    int tempArrival;
+    Process tempProcess;
     // Sort the arrays based on arrival time
     for (int i = 0; i < numProcesses - 1; i++)
     {
         for (int j = 0; j < numProcesses - i - 1; j++)
         {
-            if (processArrival[j] > processArrival[j + 1])
+            if (processes[j].arrivalTime > processes[j + 1].arrivalTime)
             {
-                // Swap names
-                strcpy(tempName, processNames[j]);
-                strcpy(processNames[j], processNames[j + 1]);
-                strcpy(processNames[j + 1], tempName);
-                
-                // Swap Burst
-                tempBurst = processBurst[j];
-                processBurst[j] = processBurst[j + 1];
-                processBurst[j + 1] = tempBurst;
-                
-                // Swap arrival
-                tempArrival = processArrival[j];
-                processArrival[j] = processArrival[j + 1];
-                processArrival[j + 1] = tempArrival;
+                // Swap processes based on arrival time
+                tempProcess = processes[j];
+                processes[j] = processes[j + 1];
+                processes[j + 1] = tempProcess;
             }
         }
     }
 
     // Start the different scheduling methods
     printf("\nStarting Scheduler simulation...\n");
-    printf("FIFO variation:\n\n");
-    FIFO(numProcesses, nameLength, processNames, processBurst, processArrival);
-    //printf("\n\nSJF variation\n");
-    //SJF(numProcesses, nameLength, processNames, processBurst, processArrival);
-    //printf("\n\nRound Robin variation\n");
-    //roundRobin(numProcesses, nameLength, processNames, processBurst, processArrival);
-    //printf("\n\nSimulation ended!\n");
+    //printf("FIFO variation:\n\n");
+    //FIFO(numProcesses, processes);
+    printf("\n\nSJF variation\n\n");
+    SJF(numProcesses, processes);
+    //printf("\n\nRound Robin variation\n\n");
+    //roundRobin(numProcesses, processes);
+    printf("\n\nSimulation ended!\n");
     return 0;
 }
