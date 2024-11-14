@@ -19,7 +19,7 @@ typedef struct {
 
 /*
  * Name: Ethan Bielecki
- * Date: 11/11/2024
+ * Date: 11/14/2024
  * Description: This function will perform first
  * in first out on the processes 
 */ 
@@ -43,12 +43,14 @@ void FIFO(int numProcesses, Process processes[], int cyclesThroughput)
         {
             processes[i].waitTime += processes[j].burstTime;
         }
+
+        processes[i].waitTime -= processes[i].arrivalTime;
         
         totalWaitTime += processes[i].waitTime;
         printf("Wait time: %d\n", processes[i].waitTime);
         
         // Response time
-        processes[i].responseTime = processes[i].waitTime - processes[i].arrivalTime;
+        processes[i].responseTime = processes[i].waitTime;
         totalResponseTime += processes[i].responseTime;
         printf("Response time: %d\n\n", processes[i].responseTime);
 
@@ -425,12 +427,12 @@ int main()
 
     // Start the different scheduling methods
     printf("\nStarting Scheduler simulation...\n");
-    //printf("FIFO variation:\n\n");
-    //FIFO(numProcesses, processes, cyclesThroughputCalc);
-    //initProcesses(numProcesses, processes); // Resets certain attributes
-    //printf("\n\nSJF variation\n\n");
-    //SJF(numProcesses, processes, cyclesThroughputCalc);
-    //initProcesses(numProcesses, processes); // Resets certain attributes
+    printf("\nFIFO variation:\n\n");
+    FIFO(numProcesses, processes, cyclesThroughputCalc);
+    initProcesses(numProcesses, processes); // Resets certain attributes
+    printf("\n\nSJF variation\n\n");
+    SJF(numProcesses, processes, cyclesThroughputCalc);
+    initProcesses(numProcesses, processes); // Resets certain attributes
     printf("\n\nRound Robin variation\n\n");
     roundRobin(numProcesses, processes, cyclesThroughputCalc);
     printf("\n\nSimulation ended!\n");
