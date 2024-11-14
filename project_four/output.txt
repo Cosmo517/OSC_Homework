@@ -1,4 +1,4 @@
-Script started on Thu 14 Nov 2024 12:08:03 PM MST
+Script started on Thu 14 Nov 2024 12:41:29 PM MST
 osc@ubuntu:~/homework/project_four$ ./custom_scheduler 
 Found: Clock 3 0
 Found: Map 10 1
@@ -54,10 +54,10 @@ Process Key info:
 Wait time: 4
 Response time: 4
 
-Clock               : ###__________________
+Clock               : ###
 Map                 :  __________##########
-Mouse               :   _###_______________
-Key                 :   ____#####__________
+Mouse               :   _###
+Key                 :   ____#####
 
 Average waiting time: 3.750000
 Average response time: 3.750000
@@ -93,7 +93,7 @@ Throughput: 2 / 10
 
 
 Simulation ended!
-osc@ubuntu:~/homework/project_four$ l[Kexit
+osc@ubuntu:~/homework/project_four$ exit
 exit
 
-Script done on Thu 14 Nov 2024 12:08:17 PM MST
+Script done on Thu 14 Nov 2024 12:41:33 PM MST

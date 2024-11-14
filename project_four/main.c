@@ -10,7 +10,6 @@ typedef struct {
     int arrivalTime;
     int remainingTime;
     int startTime;
-    int finishTime;
     int waitTime;
     int responseTime;
     char outputString[512];
@@ -120,17 +119,26 @@ void SJF(int numProcesses, Process processes[], int cyclesThroughput)
         int shortestProcessIndex = -1;
         for (int i = 0; i < numProcesses; i++)
         {
-            if (currentCycle >= processes[i].arrivalTime && processes[i].remainingTime > 0 && (!shortestProcess || processes[i].remainingTime < shortestProcess->remainingTime))
+            // We want to look for the shortest process
+            // We need to check if the process has arrived and it still needs to run
+            if (processes[i].arrivalTime <= currentCycle && processes[i].remainingTime > 0)
             {
-                shortestProcess = &processes[i];
-                shortestProcessIndex = i;
+                // Now we check if we have a "shortestProcess" or not
+                // if we don't the current process is the shortestProcess to start.
+                // Otherwise, we compare the shortestProcess time and the current process
+                // remaining time
+                if (shortestProcess == NULL || processes[i].remainingTime < shortestProcess->remainingTime)
+                {
+                    shortestProcess = &processes[i];
+                    shortestProcessIndex = i;
+                }
             }
         }
 
         // Make sure we do have a shortest process (its not null)
         if (shortestProcess)
         {
-            // Check if the process just started
+            // Check if the process just started (i.e. the first time running)
            if (shortestProcess->remainingTime == shortestProcess->burstTime)
             {
                 shortestProcess->startTime = currentCycle;
@@ -170,7 +178,7 @@ void SJF(int numProcesses, Process processes[], int cyclesThroughput)
                 {
                     processes[i].outputString[j] = ' ';
                 }
-                else
+                else if (processes[i].remainingTime > 0)
                 {
                     processes[i].outputString[j] = '_';
                     if (processes[i].remainingTime > 0)
@@ -231,7 +239,7 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
     int queueIndex = 0; // marks where we will be pulling from
     int queueEnd = 0; // marks where the end of the queue is
     int processesCompletedThroughput = 0;
-    int queueCount = 0;
+    int queueCount = 0; // Lets us keep track of how many items are in the queue
 
     Process* poppedProcess = NULL;
     while (finished != numProcesses)
@@ -242,7 +250,8 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
         {
             for (int i = 0; i < numProcesses; i++)
             {
-                // If the arrivalTime is <= currentCycle, that means
+                // If the arrivalTime is <= currentCycle and the
+                // process hasn't been started, that means
                 // we can add the process to the ready queue
                 if (processes[i].arrivalTime <= currentCycle &&
                         processesStartedTracker[i] == 0)
@@ -265,8 +274,8 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
             }
         }
 
-        // Check if we had a popped process, if we do, add it
-        // to the back of the ready queue
+        // Check if we had a popped process that still needs to
+        // run, if we do, add it to the back of the ready queue
         if (poppedProcess && poppedProcess->remainingTime > 0)
         {
             readyQueue[queueEnd] = poppedProcess;
@@ -305,7 +314,7 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
             }
 
             // Lastly, we add a '_' for every other process in the
-            // waiting queue
+            // ready queue
             for (int k = queueIndex; k != queueEnd; k = (k + 1) % numProcesses)
             {
                 int n = 0;
@@ -427,14 +436,21 @@ int main()
 
     // Start the different scheduling methods
     printf("\nStarting Scheduler simulation...\n");
+    
+    // FIFO
     printf("\nFIFO variation:\n\n");
     FIFO(numProcesses, processes, cyclesThroughputCalc);
     initProcesses(numProcesses, processes); // Resets certain attributes
+    
+    // SJF (which is actually SRTF)
     printf("\n\nSJF variation\n\n");
     SJF(numProcesses, processes, cyclesThroughputCalc);
     initProcesses(numProcesses, processes); // Resets certain attributes
+    
+    // Round Robin with q = 1
     printf("\n\nRound Robin variation\n\n");
     roundRobin(numProcesses, processes, cyclesThroughputCalc);
+    
     printf("\n\nSimulation ended!\n");
     return 0;
 }
