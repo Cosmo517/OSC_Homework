@@ -1,0 +1,99 @@
+Script started on Thu 14 Nov 2024 12:08:03 PM MST
+osc@ubuntu:~/homework/project_four$ ./custom_scheduler 
+Found: Clock 3 0
+Found: Map 10 1
+Found: Mouse 3 2
+Found: Key 5 2
+
+Starting Scheduler simulation...
+
+FIFO variation:
+
+Process Clock info:
+Wait time: 0
+Response time: 0
+
+Process Map info:
+Wait time: 2
+Response time: 2
+
+Process Mouse info:
+Wait time: 11
+Response time: 11
+
+Process Key info:
+Wait time: 14
+Response time: 14
+
+
+Clock               : ###
+Map                 :  __##########
+Mouse               :   ___________###
+Key                 :   ______________#####
+
+Average waiting time: 6.750000
+Average response time: 6.750000
+Throughput: 1 / 10 
+
+
+SJF variation
+
+Process Clock info:
+Wait time: 0
+Response time: 0
+
+Process Map info:
+Wait time: 10
+Response time: 10
+
+Process Mouse info:
+Wait time: 1
+Response time: 1
+
+Process Key info:
+Wait time: 4
+Response time: 4
+
+Clock               : ###__________________
+Map                 :  __________##########
+Mouse               :   _###_______________
+Key                 :   ____#####__________
+
+Average waiting time: 3.750000
+Average response time: 3.750000
+Throughput: 3 / 10
+
+
+Round Robin variation
+
+Process Clock info:
+Wait time: 4
+Response time: 0
+
+Process Map info:
+Wait time: 10
+Response time: 0
+
+Process Mouse info:
+Wait time: 6
+Response time: 1
+
+Process Key info:
+Wait time: 9
+Response time: 2
+
+Clock               : #_#___#
+Map                 :  #___#___#__#_#_#####
+Mouse               :   _#___#__#
+Key                 :   __#___#__#_#_#
+
+Average waiting time: 7.250000
+Average response time: 0.750000
+Throughput: 2 / 10
+
+
+Simulation ended!
+osc@ubuntu:~/homework/project_four$ l[Kexit
+exit
+
+Script done on Thu 14 Nov 2024 12:08:17 PM MST
