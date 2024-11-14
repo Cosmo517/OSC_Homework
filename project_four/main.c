@@ -159,7 +159,7 @@ void SJF(int numProcesses, Process processes[], int cyclesThroughput)
             {
                 finished++;
                 // Throughput
-                if (currentCycle <= cyclesThroughput)
+                if (currentCycle < cyclesThroughput)
                     processesCompletedThroughput++;
             }
         }
@@ -309,7 +309,7 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
             if (poppedProcess->remainingTime == 0)
             {
                 finished++;
-                if (currentCycle <= cyclesThroughput)
+                if (currentCycle < cyclesThroughput)
                     processesCompletedThroughput++;
             }
 
