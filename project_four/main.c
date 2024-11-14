@@ -91,8 +91,8 @@ void FIFO(int numProcesses, Process processes[], int cyclesThroughput)
     printf("\n");
 
     // Average information
-    averageWaitTime = totalWaitTime / numProcesses;
-    averageResponseTime = totalResponseTime / numProcesses;
+    averageWaitTime = (float)totalWaitTime / numProcesses;
+    averageResponseTime = (float)totalResponseTime / numProcesses;
     printf("Average waiting time: %f\n", averageWaitTime);
     printf("Average response time: %f\n", averageResponseTime);
     printf("Throughput: %d / %d \n", processesCompleted, cyclesThroughput);
@@ -100,7 +100,7 @@ void FIFO(int numProcesses, Process processes[], int cyclesThroughput)
 
 /*
  * Name: Ethan Bielecki
- * Date: 11/11/2024
+ * Date: 11/13/2024
  * Description: This function will perform
  * shortest job first on the processes
 */ 
@@ -206,8 +206,8 @@ void SJF(int numProcesses, Process processes[], int cyclesThroughput)
    }
 
    // Now display average information
-   averageWaitTime = totalWaitTime / numProcesses;
-   averageResponseTime = totalResponseTime / numProcesses;
+   averageWaitTime = (float)totalWaitTime / numProcesses;
+   averageResponseTime = (float)totalResponseTime / numProcesses;
    printf("\nAverage waiting time: %f\n", averageWaitTime);
    printf("Average response time: %f\n", averageResponseTime);
    printf("Throughput: %d / %d\n", processesCompletedThroughput, cyclesThroughput);
@@ -215,7 +215,7 @@ void SJF(int numProcesses, Process processes[], int cyclesThroughput)
 
 /*
  * Name: Ethan Bielecki
- * Date: 11/11/2024
+ * Date: 11/14/2024
  * Description: This function will perform round
  * robin scheduling on the processes
 */ 
@@ -229,9 +229,10 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
     int queueIndex = 0; // marks where we will be pulling from
     int queueEnd = 0; // marks where the end of the queue is
     int processesCompletedThroughput = 0;
+    int queueCount = 0;
 
     Process* poppedProcess = NULL;
-    while (finished != 4)
+    while (finished != numProcesses)
     {
         // We first want to check if a process has arrived
         // If it has, add it to the end of the queue
@@ -239,7 +240,6 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
         {
             for (int i = 0; i < numProcesses; i++)
             {
-                printf("Current cycle: %d\n", currentCycle);
                 // If the arrivalTime is <= currentCycle, that means
                 // we can add the process to the ready queue
                 if (processes[i].arrivalTime <= currentCycle &&
@@ -250,7 +250,7 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
                     queueEnd = (queueEnd + 1) % numProcesses;
                     processesStarted++;
                     processesStartedTracker[i] = 1;
-                    printf("Adding to ready queue: %s\n", processes[i].name);
+                    queueCount++;
                 }
                 else if (processesStartedTracker[i] == 0)
                 {
@@ -267,23 +267,21 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
         // to the back of the ready queue
         if (poppedProcess && poppedProcess->remainingTime > 0)
         {
-            printf("Adding %s to the back of ready queue. Time = %d\n", poppedProcess->name, poppedProcess->remainingTime);
             readyQueue[queueEnd] = poppedProcess;
             queueEnd = (queueEnd + 1) % numProcesses;
+            queueCount++;
         }
 
-        //printf("QueueIndex = %d, QueueEnd = %d\n", queueIndex, queueEnd);
         // Now that we have the processes in the ready queue
         // We need to take the first one out to begin processing
-        if (queueIndex != queueEnd) // queue has items in it
+        if (queueCount > 0) // queue has items in it
         {
             poppedProcess = readyQueue[queueIndex];
-            printf("Running process %s\n", poppedProcess->name);
             queueIndex = (queueIndex + 1) % numProcesses;
+            queueCount--;
             // This handles if the process just starts
             if (poppedProcess->remainingTime == poppedProcess->burstTime)
             {
-                printf("Process %s first time running\n", poppedProcess->name);
                 poppedProcess->startTime = currentCycle;
                 poppedProcess->responseTime = currentCycle - poppedProcess->arrivalTime;
             }
@@ -300,7 +298,6 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
             if (poppedProcess->remainingTime == 0)
             {
                 finished++;
-                printf("Finished: %s\n", poppedProcess->name);
                 if (currentCycle <= cyclesThroughput)
                     processesCompletedThroughput++;
             }
@@ -309,8 +306,6 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
             // waiting queue
             for (int k = queueIndex; k != queueEnd; k = (k + 1) % numProcesses)
             {
-                //printf("k = %d, queueEnd = %d\n", k, queueEnd);
-                printf("Item in queue: %s\n", readyQueue[k]->name);
                 int n = 0;
                 while (readyQueue[k]->outputString[n] != '\0')
                     n++;
@@ -347,11 +342,30 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
     }
 
     // Now display average information
-    averageWaitTime = totalWaitTime / numProcesses;
-    averageResponseTime = totalResponseTime / numProcesses;
+    averageWaitTime = (float)totalWaitTime / numProcesses;
+    averageResponseTime = (float)totalResponseTime / numProcesses;
     printf("\nAverage waiting time: %f\n", averageWaitTime);
     printf("Average response time: %f\n", averageResponseTime);
     printf("Throughput: %d / %d\n", processesCompletedThroughput, cyclesThroughput);
+}
+
+/*
+ * Name: Ethan Bielecki
+ * Date: 11/14/2024
+ * Description: The function resets or sets certain attributes
+ * for each process in between each scheduling implementation
+*/ 
+void initProcesses(int numProcesses, Process processes[])
+{
+    for (int i = 0; i < numProcesses; i++)
+    { 
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].waitTime = 0;
+        processes[i].startTime = 0;
+        processes[i].responseTime = 0;
+
+        memset(processes[i].outputString, '\0', sizeof(processes[i].outputString));
+    }
 }
 
 
@@ -364,7 +378,8 @@ int main()
 {
     // Basic process information
     int numProcesses = 5;
-    
+    int cyclesThroughputCalc = 10;
+
     // Max 5 processes, max 128 char names
     Process processes[numProcesses];    
 
@@ -382,9 +397,6 @@ int main()
     while (fscanf(fileInput, "%s %d %d", processes[i].name, &processes[i].burstTime, &processes[i].arrivalTime) == 3)
     {
         printf("Found: %s %d %d\n", processes[i].name, processes[i].burstTime, processes[i].arrivalTime);
-        processes[i].remainingTime = processes[i].burstTime;
-        processes[i].waitTime = 0;
-        memset(processes[i].outputString, '\0', sizeof(processes[i].outputString));
         i++;
     }
     
@@ -392,6 +404,8 @@ int main()
     numProcesses = i;
 
     fclose(fileInput);
+
+    initProcesses(numProcesses, processes);
 
     Process tempProcess;
     // Sort the arrays based on arrival time
@@ -412,11 +426,13 @@ int main()
     // Start the different scheduling methods
     printf("\nStarting Scheduler simulation...\n");
     //printf("FIFO variation:\n\n");
-    //FIFO(numProcesses, processes, 10);
+    //FIFO(numProcesses, processes, cyclesThroughputCalc);
+    //initProcesses(numProcesses, processes); // Resets certain attributes
     //printf("\n\nSJF variation\n\n");
-    //SJF(numProcesses, processes, 10);
+    //SJF(numProcesses, processes, cyclesThroughputCalc);
+    //initProcesses(numProcesses, processes); // Resets certain attributes
     printf("\n\nRound Robin variation\n\n");
-    roundRobin(numProcesses, processes, 10);
+    roundRobin(numProcesses, processes, cyclesThroughputCalc);
     printf("\n\nSimulation ended!\n");
     return 0;
 }
