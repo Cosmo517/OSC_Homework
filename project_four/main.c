@@ -222,12 +222,15 @@ void SJF(int numProcesses, Process processes[], int cyclesThroughput)
 void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
 {
     Process* readyQueue[5];
+    int processesStartedTracker[5] = {0};
     int finished = 0;
     int processesStarted = 0;
     int currentCycle = 0;
     int queueIndex = 0; // marks where we will be pulling from
     int queueEnd = 0; // marks where the end of the queue is
-    
+    int processesCompletedThroughput = 0;
+
+    Process* poppedProcess = NULL;
     while (finished != 4)
     {
         // We first want to check if a process has arrived
@@ -236,31 +239,119 @@ void roundRobin(int numProcesses, Process processes[], int cyclesThroughput)
         {
             for (int i = 0; i < numProcesses; i++)
             {
+                printf("Current cycle: %d\n", currentCycle);
                 // If the arrivalTime is <= currentCycle, that means
                 // we can add the process to the ready queue
-                if (processes[i].arrivalTime <= currentCycle)
+                if (processes[i].arrivalTime <= currentCycle &&
+                        processesStartedTracker[i] == 0)
                 {
                     // Add the process to the end of the queue
                     readyQueue[queueEnd] = &processes[i];
                     queueEnd = (queueEnd + 1) % numProcesses;
+                    processesStarted++;
+                    processesStartedTracker[i] = 1;
+                    printf("Adding to ready queue: %s\n", processes[i].name);
+                }
+                else if (processesStartedTracker[i] == 0)
+                {
+                    // The process hasnt arrived yet, add a ' '
+                    int j = 0;
+                    while (processes[i].outputString[j] != '\0')
+                        j++;
+                    processes[i].outputString[j] = ' ';
                 }
             }
         }
 
+        // Check if we had a popped process, if we do, add it
+        // to the back of the ready queue
+        if (poppedProcess && poppedProcess->remainingTime > 0)
+        {
+            printf("Adding %s to the back of ready queue. Time = %d\n", poppedProcess->name, poppedProcess->remainingTime);
+            readyQueue[queueEnd] = poppedProcess;
+            queueEnd = (queueEnd + 1) % numProcesses;
+        }
+
+        //printf("QueueIndex = %d, QueueEnd = %d\n", queueIndex, queueEnd);
         // Now that we have the processes in the ready queue
         // We need to take the first one out to begin processing
         if (queueIndex != queueEnd) // queue has items in it
-        {dw
-            Process* popped = readyQueue[queueIndex];
-            if (popped->remainingTime == popped->burstTime)
+        {
+            poppedProcess = readyQueue[queueIndex];
+            printf("Running process %s\n", poppedProcess->name);
+            queueIndex = (queueIndex + 1) % numProcesses;
+            // This handles if the process just starts
+            if (poppedProcess->remainingTime == poppedProcess->burstTime)
             {
-                popped->startTime = currentCycle;
-                popped->responseTime = currentCycle - popped->arrivalTime;
+                printf("Process %s first time running\n", poppedProcess->name);
+                poppedProcess->startTime = currentCycle;
+                poppedProcess->responseTime = currentCycle - poppedProcess->arrivalTime;
+            }
+
+            // Now we "run" the process
+            poppedProcess->remainingTime--;
+            // Add a # to the end of the process
+            int i = 0;
+            while (poppedProcess->outputString[i] != '\0')
+                i++;
+            poppedProcess->outputString[i] = '#';
+
+            // Check if the process is done
+            if (poppedProcess->remainingTime == 0)
+            {
+                finished++;
+                printf("Finished: %s\n", poppedProcess->name);
+                if (currentCycle <= cyclesThroughput)
+                    processesCompletedThroughput++;
+            }
+
+            // Lastly, we add a '_' for every other process in the
+            // waiting queue
+            for (int k = queueIndex; k != queueEnd; k = (k + 1) % numProcesses)
+            {
+                //printf("k = %d, queueEnd = %d\n", k, queueEnd);
+                printf("Item in queue: %s\n", readyQueue[k]->name);
+                int n = 0;
+                while (readyQueue[k]->outputString[n] != '\0')
+                    n++;
+                readyQueue[k]->outputString[n] = '_';
+                readyQueue[k]->waitTime++;
             }
         }
 
         currentCycle++;
     }
+
+    // We can also do calculations for average times
+    int totalWaitTime = 0;
+    float averageWaitTime = 0;
+    int totalResponseTime = 0;
+    float averageResponseTime = 0;
+
+    for (int i = 0; i < numProcesses; i++)
+    {
+        printf("Process %s info:\n", processes[i].name);
+        printf("Wait time: %d\n", processes[i].waitTime);
+        printf("Response time: %d\n", processes[i].responseTime);
+        printf("\n");
+
+        totalWaitTime += processes[i].waitTime;
+        totalResponseTime += processes[i].responseTime;
+    }
+   
+
+    // Now display the chart
+    for (int i = 0; i < numProcesses; i++)
+    {
+        printf("%-20s: %s\n", processes[i].name, processes[i].outputString); 
+    }
+
+    // Now display average information
+    averageWaitTime = totalWaitTime / numProcesses;
+    averageResponseTime = totalResponseTime / numProcesses;
+    printf("\nAverage waiting time: %f\n", averageWaitTime);
+    printf("Average response time: %f\n", averageResponseTime);
+    printf("Throughput: %d / %d\n", processesCompletedThroughput, cyclesThroughput);
 }
 
 
