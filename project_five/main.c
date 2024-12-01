@@ -17,7 +17,7 @@ typedef struct {
     int work;
 } ThreadData;
 
-sem_t semaphores[TOTAL_RESOURCES]
+sem_t semaphores[TOTAL_RESOURCES];
 
 /*
  * Name: Ethan Bielecki
@@ -27,7 +27,7 @@ sem_t semaphores[TOTAL_RESOURCES]
 */ 
 int rand_num(int start, int end)
 {
-    return rand() % end + start
+    return rand() % end + start;
 }
 
 /*
@@ -38,10 +38,8 @@ int rand_num(int start, int end)
 */ 
 void random_sleep(int max_ms)
 {
-    struct timespec sleep;
-    sleep.remaining = 0;
-    ts.request = (rand() % (max_mras + 1)) * 1000000;
-    nanosleep(&ts, NULL);
+    struct timespec remaining, request = { 0, (rand() % (max_ms + 1)) * 1000000 };
+    nanosleep(&request, &remaining);
 }
 
 /*
@@ -73,36 +71,36 @@ int main()
     srand(time(NULL));
     
     // The following arrays will keep track of each thread, the thread data,
-    s// and contain possible thread_ids.
-    pthread_t threads[NUM_THREADS];
-    ThreadData thread_data[NUM_THREADS];
+    // and contain possible thread_ids.
+    pthread_t threads[TOTAL_THREADS];
+    ThreadData thread_data[TOTAL_THREADS];
     char thread_ids[] = {'A', 'B', 'C', 'D'};
 
     // Initialize our semaphores
-    for (int i = 0; i < NUM_RESOURCES; i++)
+    for (int i = 0; i < TOTAL_RESOURCES; i++)
     {
         sem_init(&semaphores[i], 0, 1);
     }
     
     // Now we can create our threads
-    for (int i = 0; i < NUM_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; i++)
     {
         // Lets initialize the thread data
-        thread_data[i].id = thread_ids[i];
-        thread_data[i].work = WORK_AMOUNT;
+        thread_data[i].thread_id = thread_ids[i];
+        thread_data[i].work = TOTAL_WORK;
         // Now we create the thread
         pthread_create(&threads[i], NULL, thread_work, &thread_data[i]);
     }
 
     // Now lets just our threads to prevent the program from ending
     // before all threads are finished
-    /for (int i = 0; i < NUM_THREADS; i++)
+    for (int i = 0; i < TOTAL_THREADS; i++)
     {
         pthread_join(threads[i], NULL);
     }
 
     // Now lets remove our semaphores
-    for (int i = 0; i < NUM_RESOURCES; i++)
+    for (int i = 0; i < TOTAL_RESOURCES; i++)
     {
         sem_destroy(&semaphores[i]);
     }
