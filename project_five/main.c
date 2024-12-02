@@ -102,6 +102,9 @@ void *thread_work(void *arg)
                     }
                 }
             }
+            
+            // Sleep to extend the critical section time
+            random_sleep(10);
 
             // Check to see if we need to release the semaphores
             if (acquiredSemaphores != numSemaphores)
@@ -116,7 +119,6 @@ void *thread_work(void *arg)
                     }
                 }
                 acquiredSemaphores = 0;
-                random_sleep(10); // Sleep for up to 10 ms
             }
         }
 
@@ -124,6 +126,10 @@ void *thread_work(void *arg)
         // obtained all the semaphores it needs
         printf("%c has %d left\n", data->thread_id, data->work);
         data->work--;
+
+        // Sleep to extend the critical section
+        random_sleep(10);
+
         acquiredSemaphores = 0;
 
         // Now we need to release the semaphores
@@ -136,7 +142,6 @@ void *thread_work(void *arg)
                 printf("%c<%d\n", data->thread_id, i);
             }
         }
-        random_sleep(10); // Sleep for up to 10 ms
     }
 
     // Once here, we have no work left, so exit
