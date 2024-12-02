@@ -7,7 +7,7 @@
 
 // The constants below are used to store unchanging
 // information
-#define TOTAL_THREADS 4
+#define TOTAL_THREADS 3
 #define TOTAL_RESOURCES 3
 #define TOTAL_WORK 10
 
@@ -42,6 +42,7 @@ void random_sleep(int max_ms)
     nanosleep(&request, &remaining);
 }
 
+
 /*
  * Name: Ethan Bielecki
  * Date: 11/30/2024
@@ -53,11 +54,104 @@ void *thread_work(void *arg)
     // Grab the data from the parameter
     ThreadData *data = (ThreadData*)arg;
 
+    printf("STARTING: %c\n", data->thread_id);
+
     // While the thread still has work to do
     while (data->work > 0)
     {
+        printf("WITHIN WORK: %c\n", data->thread_id);
+        // Generate the amount of semaphores we need
+        int numSemaphores = rand_num(1, 3);
+        // This array will store the semaphores the thread needs to do work
+        int semaphoresNeeded[TOTAL_RESOURCES];
+        
+        // Reset all resources for each run
+        for (int i = 0; i < TOTAL_RESOURCES; i++)
+            semaphoresNeeded[i] = 0;
 
+        // Choose random semaphores needed
+        int chosen = 0;
+        while (chosen < numSemaphores)
+        {
+            int randSemaphore = rand_num(0, 2);
+            // If the smeaphore is already chosen, choose a new one
+            if (semaphoresNeeded[randSemaphore])
+                continue;
+            semaphoresNeeded[randSemaphore] = 1;
+            chosen++;
+        }
+
+        // DEBUG PRINT
+        printf("%c needs %d semaphores\n", data->thread_id, numSemaphores);
+        for (int i = 0; i < TOTAL_RESOURCES; i++)
+            if (semaphoresNeeded[i])
+                printf("%c needs %d\n", data->thread_id, i);
+
+        // Now we need to try to attain all the semaphores
+        int semaphoresObtained[TOTAL_RESOURCES]; // List of the semaphores we obtained
+        int acquiredSemaphores = 0; // How many have we obtained
+        
+        // Set all obtained semaphores to 0
+        for (int i = 0; i < TOTAL_RESOURCES; i++)
+            semaphoresObtained[i] = 0;
+        
+        while(acquiredSemaphores < numSemaphores)
+        {
+            // Loop to find the semaphores we need
+            for (int i = 0; i < TOTAL_RESOURCES; i++)
+            {
+                // If we need this semaphore
+                if (semaphoresNeeded[i])
+                {
+                    if (sem_trywait(&semaphores[i]) == 0)
+                    {
+                        semaphoresObtained[i] = 1;
+                        acquiredSemaphores++;
+                        printf("%c>%d\n", data->thread_id, i);
+                    }
+                }
+            }
+
+            // Check to see if we need to release the semaphores
+            if (acquiredSemaphores != numSemaphores)
+            {
+                for (int i = 0; i < TOTAL_RESOURCES; i++)
+                {
+                    if (semaphoresObtained[i])
+                    {
+                        semaphoresObtained[i] = 0;
+                        sem_post(&semaphores[i]);
+                        printf("%c<%d\n", data->thread_id, i);
+                    }
+                }
+                printf("RESETING %c\n", data->thread_id);
+                random_sleep(10); // Sleep for up to 10 ms
+            }
+        }
+
+        // If we make it here, that means the thread has
+        // obtained all the semaphores it needs
+        printf("%c has %d left\n", data->thread_id, data->work);
+        data->work--;
+        acquiredSemaphores = 0;
+
+        // Now we need to release the semaphores
+        for (int i = 0; i < TOTAL_RESOURCES; i++)
+        {
+            if (semaphoresObtained[i])
+            {
+                semaphoresObtained[i] = 0;
+                sem_post(&semaphores[i]);
+                printf("%c<%d\n", data->thread_id, i);
+            }
+        }
+        printf("RESETTING %c\n", data->thread_id);
+        random_sleep(10); // Sleep for up to 10 ms
     }
+
+    // Once here, we have no work left, so exit
+    printf("EXITING %c\n", data->thread_id);
+    pthread_exit(NULL);
 }
 
 /*
@@ -98,6 +192,8 @@ int main()
     {
         pthread_join(threads[i], NULL);
     }
+    
+    printf("DONE\n");
 
     // Now lets remove our semaphores
     for (int i = 0; i < TOTAL_RESOURCES; i++)
