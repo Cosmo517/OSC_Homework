@@ -27,7 +27,7 @@ sem_t semaphores[TOTAL_RESOURCES];
 */ 
 int rand_num(int start, int end)
 {
-    return rand() % end + start;
+    return rand() % (end - start + 1) + start;
 }
 
 /*
@@ -54,12 +54,9 @@ void *thread_work(void *arg)
     // Grab the data from the parameter
     ThreadData *data = (ThreadData*)arg;
 
-    printf("STARTING: %c\n", data->thread_id);
-
     // While the thread still has work to do
     while (data->work > 0)
     {
-        printf("WITHIN WORK: %c\n", data->thread_id);
         // Generate the amount of semaphores we need
         int numSemaphores = rand_num(1, 3);
         // This array will store the semaphores the thread needs to do work
@@ -80,12 +77,6 @@ void *thread_work(void *arg)
             semaphoresNeeded[randSemaphore] = 1;
             chosen++;
         }
-
-        // DEBUG PRINT
-        printf("%c needs %d semaphores\n", data->thread_id, numSemaphores);
-        for (int i = 0; i < TOTAL_RESOURCES; i++)
-            if (semaphoresNeeded[i])
-                printf("%c needs %d\n", data->thread_id, i);
 
         // Now we need to try to attain all the semaphores
         int semaphoresObtained[TOTAL_RESOURCES]; // List of the semaphores we obtained
@@ -124,7 +115,7 @@ void *thread_work(void *arg)
                         printf("%c<%d\n", data->thread_id, i);
                     }
                 }
-                printf("RESETING %c\n", data->thread_id);
+                acquiredSemaphores = 0;
                 random_sleep(10); // Sleep for up to 10 ms
             }
         }
@@ -145,12 +136,10 @@ void *thread_work(void *arg)
                 printf("%c<%d\n", data->thread_id, i);
             }
         }
-        printf("RESETTING %c\n", data->thread_id);
         random_sleep(10); // Sleep for up to 10 ms
     }
 
     // Once here, we have no work left, so exit
-    printf("EXITING %c\n", data->thread_id);
     pthread_exit(NULL);
 }
 
