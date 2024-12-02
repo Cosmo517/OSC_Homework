@@ -1,0 +1,1 @@
+When you perform a sleep, this allows time for other threads to try and access a semaphore without another thread interrupting it. If we remove the sleep time, every thread is constantly retrying to grab semaphores. This lends to a longer contention period where threads are fighting over semaphores. 

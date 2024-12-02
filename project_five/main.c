@@ -7,7 +7,7 @@
 
 // The constants below are used to store unchanging
 // information
-#define TOTAL_THREADS 3
+#define TOTAL_THREADS 5
 #define TOTAL_RESOURCES 3
 #define TOTAL_WORK 10
 
@@ -157,7 +157,7 @@ int main()
     // and contain possible thread_ids.
     pthread_t threads[TOTAL_THREADS];
     ThreadData thread_data[TOTAL_THREADS];
-    char thread_ids[] = {'A', 'B', 'C', 'D'};
+    char thread_ids[] = {'A', 'B', 'C', 'D', 'E'};
 
     // Initialize our semaphores
     for (int i = 0; i < TOTAL_RESOURCES; i++)
