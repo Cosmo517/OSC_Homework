@@ -1,69 +1,134 @@
-Script started on Thu 05 Dec 2024 09:58:16 PM MST
+Script started on Thu 05 Dec 2024 10:14:01 PM MST
 osc@ubuntu:~/homework/project_five$ ./balancer 
-A>0
-A>1
 A>2
 A has 10 left
-A<0
-A<1
+B>0
+B>1
+B has 10 left
+B<0
+B<1
+B>0
+B<0
 A<2
-A>0
-A>1
 A>2
 A has 9 left
-A<0
-A<1
-A<2
-A>2
-A has 8 left
 E>0
+E>1
 E<0
-A<2
-A>0
-A has 7 left
+E<1
+E>0
+E>1
+E<0
+E<1
 C>1
 C has 10 left
-A<0
-A>0
-A has 6 left
-D>2
-D<2
-E>2
-E<2
-D>2
-D<2
-A<0
-A>0
-A>2
-A<0
-A<2
-B>2
-B has 10 left
 D>0
 D<0
+B>0
+B<0
+A<2
+C<1
+C>0
+C has 9 left
+D>1
+D>2
+D<1
+D<2
+B>2
+B<2
+E>1
+E>2
+E<1
+E<2
+D>1
+D>2
+D<1
+D<2
+A>1
+A has 8 left
+D>2
+D<2
+C<0
+C>2
+C<2
+B>0
+B>2
+B has 9 left
+A<1
+B<0
+B<2
+B>0
+B>2
+B has 8 left
+B<0
+B<2
+B>0
+B>1
+B>2
+B has 7 left
+B<0
+B<1
+B<2
+B>2
+B has 6 left
+E>0
+E>1
+E<0
+E<1
+C>1
 C<1
 E>0
+E>1
 E<0
-D>0
-D>1
-D<0
-D<1
-D>0
-D>1
-D<0
-D<1
+E<1
+E>0
+E>1
+E<0
+E<1
+A>0
+A<0
 D>0
 D>1
 D<0
 D<1
 B<2
 B>0
-B has 9 left
+B>1
+B>2
+B has 5 left
 B<0
-E>0
-E<0
+B<1
+B<2
+B>0
+B>1
+B>2
+B has 4 left
+B<0
+B<1
+B<2
+B>0
+B>2
+B has 3 left
+B<0
+B<2
+B>0
+B>1
+B>2
+B has 2 left
+B<0
+B<1
+B<2
+B>0
+B>1
+B has 1 left
 C>2
 C<2
+D>2
+D<2
+E>2
+E<2
+B<0
+B<1
 D>0
 D>1
 D>2
@@ -78,315 +143,134 @@ D has 9 left
 D<0
 D<1
 D<2
+D>1
 D>2
 D has 8 left
-B>0
-B has 8 left
-A>1
-A<1
-B<0
-D<2
-D>0
-D>1
-D>2
-D has 7 left
-D<0
+E>0
+E<0
+A>0
+A<0
 D<1
 D<2
-D>0
+D>1
+D has 7 left
+E>0
+E>2
+E<0
+E<2
+E>0
+E>2
+E<0
+E<2
+C>2
+C<2
+D<1
+D>1
 D>2
 D has 6 left
-A>1
-A<1
-D<0
+A>0
+A<0
+A>0
+A<0
+A>0
+A<0
+D<1
 D<2
-D>1
 D>2
 D has 5 left
-A>0
-A<0
+E>0
+E>1
+E<0
+E<1
+C>1
+C<1
 A>0
 A<0
 A>0
 A<0
 E>0
+E>1
 E<0
-A>0
-A<0
-E>0
-E<0
-D<1
+E<1
 D<2
-D>1
-D>2
-D<1
-D<2
-C>0
-C>2
-C has 9 left
-C<0
-C<2
-C>0
-C>1
-C has 8 left
-D>2
-D<2
-E>2
-E<2
-B>2
-B has 7 left
-C<0
-C<1
-C>0
-C has 7 left
-D>1
-D<1
-A>1
-A<1
-B<2
-B>2
-B has 6 left
-C<0
-C>0
-C>1
-C has 6 left
-B<2
-B>2
-B<2
-C<0
-C<1
-C>0
-C has 5 left
-E>2
-E<2
-C<0
-C>0
-C>1
-C>2
-C has 4 left
-C<0
-C<1
-C<2
-C>0
-C>1
-C>2
-C has 3 left
-C<0
-C<1
-C<2
-C>0
-C>2
-C has 2 left
-A>1
-A<1
-D>1
-D<1
-A>1
-A<1
-D>1
-D<1
-C<0
-C<2
-C>0
-C>1
-C>2
-C has 1 left
-C<0
-C<1
-C<2
-E>0
-E>2
-E has 10 left
-D>1
-D<1
-A>1
-A<1
-D>1
-D<1
-E<0
-E<2
-E>0
-E>2
-E has 9 left
-A>1
-A<1
-A>1
-A<1
-E<0
-E<2
-E>0
-E>1
-E>2
-E has 8 left
-E<0
-E<1
-E<2
-E>1
-E has 7 left
-D>0
-D>2
-D<0
-D<2
-A>0
-A>2
-A<0
-A<2
-B>0
-B>2
-B has 5 left
-E<1
-D>1
-D<1
-A>1
-A<1
-B<0
-B<2
-B>0
-B>1
-B>2
-B has 4 left
-B<0
-B<1
-B<2
-B>1
-B>2
-B has 3 left
-E>0
-E<0
-A>0
-A<0
-D>0
-D<0
-D>0
-D<0
-D>0
-D<0
-D>0
-D<0
-D>0
-D<0
-A>0
-A<0
-B<1
-B<2
-B>0
-B>2
-B has 2 left
-D>1
-D<1
-D>1
-D<1
-A>1
-A<1
-B<0
-B<2
-B>0
-B>1
-B>2
-B has 1 left
-B<0
-B<1
-B<2
-E>0
-E>2
-E has 6 left
-D>1
-D<1
-D>1
-D<1
-A>1
-A<1
-D>1
-D<1
-E<0
-E<2
-E>0
-E>2
-E has 5 left
-A>1
-A<1
-A>1
-A<1
-D>1
-D<1
-E<0
-E<2
-E>0
-E>1
-E>2
-E has 4 left
-E<0
-E<1
-E<2
-E>0
-E>2
-E has 3 left
-E<0
-E<2
-E>1
-E has 2 left
-A>0
-A>2
-A<0
-A<2
-A>0
-A>2
-A<0
-A<2
-E<1
-E>0
-E>1
-E>2
-E has 1 left
-E<0
-E<1
-E<2
-D>0
 D>1
 D>2
 D has 4 left
+A>0
+A<0
+E>0
+E<0
+D<1
+D<2
+D>0
+D>1
+D>2
+D has 3 left
 D<0
 D<1
 D<2
 D>1
 D>2
-D has 3 left
+D has 2 left
+A>0
+A<0
+E>0
+E<0
 A>0
 A<0
 A>0
 A<0
-A>0
-A<0
+E>0
+E<0
 D<1
 D<2
 D>1
-D has 2 left
-A>0
-A>2
-A<0
-A<2
-A>0
-A>2
-A<0
-A<2
-D<1
-D>0
 D has 1 left
-D<0
+C>2
+C<2
+D<1
+A>0
+A>2
+A has 7 left
+C>1
+C<1
+E>1
+E<1
+E>1
+E<1
+E>1
+E<1
+E>1
+E<1
+E>1
+E<1
+A<0
+A<2
 A>0
 A>1
+A>2
+A has 6 left
+A<0
+A<1
+A<2
 A>2
 A has 5 left
-A<0
-A<1
 A<2
-A>0
 A>1
-A>2
 A has 4 left
-A<0
+E>0
+E>2
+E<0
+E<2
+C>2
+C<2
+E>0
+E>2
+E<0
+E<2
+C>2
+C<2
 A<1
-A<2
 A>0
 A>1
 A>2
@@ -399,13 +283,137 @@ A>2
 A has 2 left
 A<0
 A<2
-A>0
 A>1
+A>2
 A has 1 left
-A<0
+E>0
+E<0
+E>0
+E<0
 A<1
+A<2
+C>1
+C>2
+C has 8 left
+E>0
+E<0
+E>0
+E<0
+E>0
+E<0
+C<1
+C<2
+C>0
+C>1
+C>2
+C has 7 left
+C<0
+C<1
+C<2
+C>2
+C has 6 left
+E>0
+E>1
+E<0
+E<1
+E>0
+E>1
+E<0
+E<1
+C<2
+C>0
+C>1
+C has 5 left
+C<0
+C<1
+C>2
+C has 4 left
+E>0
+E>1
+E<0
+E<1
+E>0
+E>1
+E<0
+E<1
+C<2
+C>0
+C>1
+C has 3 left
+C<0
+C<1
+C>0
+C>1
+C>2
+C has 2 left
+C<0
+C<1
+C<2
+C>1
+C has 1 left
+E>0
+E>2
+E<0
+E<2
+E>0
+E>2
+E<0
+E<2
+C<1
+E>0
+E>1
+E>2
+E has 10 left
+E<0
+E<1
+E<2
+E>0
+E>1
+E has 9 left
+E<0
+E<1
+E>0
+E>1
+E has 8 left
+E<0
+E<1
+E>0
+E>1
+E>2
+E has 7 left
+E<0
+E<1
+E<2
+E>0
+E>2
+E has 6 left
+E<0
+E<2
+E>0
+E has 5 left
+E<0
+E>0
+E>2
+E has 4 left
+E<0
+E<2
+E>0
+E>2
+E has 3 left
+E<0
+E<2
+E>0
+E>2
+E has 2 left
+E<0
+E<2
+E>0
+E>2
+E has 1 left
+E<0
+E<2
 DONE
 osc@ubuntu:~/homework/project_five$ exit
 exit
 
-Script done on Thu 05 Dec 2024 09:58:21 PM MST
+Script done on Thu 05 Dec 2024 10:14:05 PM MST

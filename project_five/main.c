@@ -158,7 +158,8 @@ int main()
 {
     // Seed the random number generation
     srand(time(NULL));
-    
+    setvbuf(stdout, NULL, _IOFBF, 1024);
+
     // The following arrays will keep track of each thread, the thread data,
     // and contain possible thread_ids.
     pthread_t threads[TOTAL_THREADS];
