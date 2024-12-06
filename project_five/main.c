@@ -114,7 +114,7 @@ void *thread_work(void *arg)
                     {
                         semaphoresObtained[i] = 0;
                         sem_post(&semaphores[i]);
-                        printf("%c<%d\n", data->thread_id, i);
+                        printf("%c<%d\n", data->thread_id, i); 
                     }
                 }
                 acquiredSemaphores = 0;
