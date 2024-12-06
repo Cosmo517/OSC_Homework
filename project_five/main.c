@@ -103,8 +103,7 @@ void *thread_work(void *arg)
                 }
             }
             
-            // Sleep to extend the critical section time
-            random_sleep(10);
+            
 
             // Check to see if we need to release the semaphores
             if (acquiredSemaphores != numSemaphores)
@@ -119,6 +118,8 @@ void *thread_work(void *arg)
                     }
                 }
                 acquiredSemaphores = 0;
+                // Sleep before trying again
+                random_sleep(10);
             }
         }
 
